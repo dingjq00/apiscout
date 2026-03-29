@@ -276,6 +276,95 @@ def enrich(project_dir, ai, api_key):
     click.echo("  [待完善]")
 
 
+@main.command(name="import")
+@click.argument("source")
+@click.option("--output", "-o", default=None, help="输出目录")
+@click.option("--title", default=None, help="API 文档标题")
+def import_spec(source, output, title):
+    """导入已有的 Swagger/OpenAPI 文件或 URL
+
+    \b
+    示例：
+      apiscout import swagger.json
+      apiscout import https://customer.com/v3/api-docs
+      apiscout import ./docs/openapi.yaml -o output/customer
+    """
+    import json
+    import yaml as _yaml
+    from pathlib import Path
+    from apiscout.core.generator.swagger_ui import generate_swagger_html
+
+    # 加载 spec
+    spec = None
+    if source.startswith("http"):
+        click.echo(f"下载: {source}")
+        try:
+            import urllib.request
+            with urllib.request.urlopen(source) as resp:
+                raw = resp.read().decode("utf-8")
+                try:
+                    spec = json.loads(raw)
+                except json.JSONDecodeError:
+                    spec = _yaml.safe_load(raw)
+        except Exception as e:
+            click.echo(f"下载失败: {e}")
+            return
+    else:
+        p = Path(source)
+        if not p.exists():
+            click.echo(f"文件不存在: {source}")
+            return
+        click.echo(f"读取: {source}")
+        with open(p, "r", encoding="utf-8") as f:
+            if p.suffix in (".json",):
+                spec = json.load(f)
+            else:
+                spec = _yaml.safe_load(f)
+
+    if not spec or not isinstance(spec, dict):
+        click.echo("无法解析为 OpenAPI/Swagger 格式")
+        return
+
+    version = spec.get("openapi", spec.get("swagger", "unknown"))
+    info = spec.get("info", {})
+    paths = spec.get("paths", {})
+    title = title or info.get("title", "Imported API")
+
+    click.echo(f"  版本: {version}")
+    click.echo(f"  标题: {info.get('title', '')}")
+    click.echo(f"  端点: {len(paths)} 个")
+
+    # 输出目录
+    if not output:
+        from urllib.parse import urlparse
+        if source.startswith("http"):
+            host = urlparse(source).netloc.replace(":", "_")
+        else:
+            host = Path(source).stem
+        output = f"./output/{host}"
+
+    output_dir = Path(output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 保存 spec
+    spec_path = output_dir / "imported_spec.yaml"
+    with open(spec_path, "w", encoding="utf-8") as f:
+        _yaml.dump(spec, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+    # 生成 Swagger UI
+    generate_swagger_html(
+        spec=spec,
+        output_path=str(output_dir / "api_docs.html"),
+        title=title,
+    )
+
+    click.echo(f"  输出: {output_dir}")
+    click.echo(f"  文件: imported_spec.yaml + api_docs.html")
+
+    import webbrowser
+    webbrowser.open(f"file://{(output_dir / 'api_docs.html').resolve()}")
+
+
 @main.command()
 @click.option("--port", "-p", default=9527, help="端口号")
 def web(port):
