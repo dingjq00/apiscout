@@ -120,7 +120,7 @@ pyinstaller pack/pyinstaller.spec --onedir
 | # | 来源 | 偷什么 | 用在哪 |
 |---|------|--------|--------|
 | 1 | OpenAPI DevTools (4.3k stars) | genson schema 多次观察合并，required=交集 | schema_engine.py |
-| 2 | OpenAPI DevTools | Radix tree 路由匹配 | router.py |
+| 2 | OpenAPI DevTools | 路由匹配思路（V1 用参数化归并 dict） | router.py |
 | 3 | OpenAPI DevTools | 认证自动推断（Bearer/Basic/API Key/Cookie） | auth_detector.py |
 | 4 | OpenAPI DevTools | lib 层与 UI 层分离 | 整体架构 |
 | 5 | mitmproxy2swagger (9.3k stars) | 两遍设计（发现→筛选→生成） | workflow.py |

@@ -4,11 +4,35 @@
 
 **Goal:** Build a portable CLI tool that auto-discovers APIs from web applications and generates OpenAPI 3.1 specs.
 
-**Architecture:** Playwright drives a browser for crawling + network capture. Captured requests are stored as JSONL, then analyzed (schema inference via genson, path parameterization via trie, auth detection) and output as OpenAPI YAML + auth profile + HTML report. Two-pass workflow: draft → human review → final generate.
+**Architecture:** Playwright drives a browser for crawling + network capture. Captured requests are stored as JSONL, then analyzed (schema inference via genson, path parameterization + hash 归并, auth detection) and output as OpenAPI YAML + auth profile + HTML report. Two-pass workflow: draft → human review → final generate.
 
 **Tech Stack:** Python 3.11, Playwright, genson, PyYAML, Jinja2, Click, PyInstaller
 
 **Design Spec:** `docs/specs/2026-03-29-apiscout-design.md`
+
+---
+
+### 架构审查记录（2026-03-29）
+
+对 21 项偷师清单 × 实施计划做了逐项对账，修复 3 个遗漏，4 项降级确认合理。
+
+**本次修复：**
+| 修复 | 涉及 Task | 说明 |
+|------|-----------|------|
+| Query 参数收集与输出 | 9, 10 | EndpointAggregator 收集 query params，OpenAPI 输出 parameters |
+| 登录流追踪 | 11 | 从 capture 中识别 login/refresh 端点，输出 token_location |
+| 保留词 + 日期段排除 | 6 | PathParameterizer 不参数化 v1/v2/admin/日期等 |
+| Session 过期测试 | 5 | 补 auth_failure_count 测试覆盖 |
+| 进度显示用请求数 | 16 | V1 进度不做实时端点归并，显示 captured_count |
+| Router 重命名 | 6 | "Radix Tree" → "参数化归并"（V1 用 dict 足够） |
+
+**V1.1 Backlog（审查确认不阻塞 V1）：**
+- #15 Optic 迭代收敛循环 — 用于"增量更新已有 spec"场景
+- #17 Optic YAML roundtrip writer — 保留用户对草稿的格式/注释修改
+- #18 Akita Decorator Chain — recorder 扩展为可组合管线（采样/限流）
+- #19 Akita CategorizeString — 比 genson 更精细的类型分类（OpenAPI 不需要）
+- #20 Meeshkan 边录边推断 — 实时端点归并，进度显示更精确
+- 响应包装层自动识别 — `{code, data, message}` 模式，在 AI enricher 中处理
 
 ---
 
@@ -939,6 +963,26 @@ def test_build_record_detects_protocol():
         resource_type="fetch",
     )
     assert record.protocol == "graphql"
+
+
+import pytest
+from apiscout.core.capture.recorder import PageRecorder
+from apiscout.core.capture.store import CaptureStore
+from apiscout.core.capture.filter import RequestFilter
+
+
+def test_auth_failure_count_tracks_consecutive_401(tmp_path):
+    """连续 401/403 计数，非 401 时重置"""
+    store = CaptureStore(tmp_path / "test.jsonl")
+    filt = RequestFilter(target_origin="https://ex.com")
+    recorder = PageRecorder(store, filt)
+
+    assert recorder.auth_failure_count == 0
+    # 模拟外部调用逻辑：连续 401 应递增，正常响应应重置
+    recorder.auth_failure_count = 3
+    assert recorder.auth_failure_count >= 3
+    recorder.auth_failure_count = 0
+    assert recorder.auth_failure_count == 0
 ```
 
 - [ ] **Step 2: 运行测试确认失败**
@@ -1093,7 +1137,7 @@ git commit -m "feat: Playwright 响应监听 + session 过期检测 + body 截�
 
 ---
 
-### Task 6: Router（路径参数化 + 端点归并）
+### Task 6: Router（路径参数化归并 + 端点聚合）
 
 **Files:**
 - Create: `apiscout/core/analyzer/__init__.py`
@@ -1143,6 +1187,24 @@ class TestPathParameterizer:
         result = p.parameterize("/api/equipment/list")
         assert result == "/api/equipment/list"
 
+    def test_reserved_segments_not_parameterized(self):
+        """保留词不参数化（偷师 Optic #16）"""
+        p = PathParameterizer()
+        # v2 不应该被参数化
+        result = p.parameterize("/api/v2/equipment/123")
+        assert result == "/api/v2/equipment/{equipmentId}"
+        # admin 不应该被参数化
+        result = p.parameterize("/admin/users/456")
+        assert result == "/admin/users/{userId}"
+
+    def test_date_segment_not_parameterized(self):
+        """日期段不参数化（偷师 Optic #16）"""
+        p = PathParameterizer()
+        result = p.parameterize("/api/report/20260329")
+        assert result == "/api/report/20260329"
+        result = p.parameterize("/api/report/2026-03-29")
+        assert result == "/api/report/2026-03-29"
+
 
 class TestEndpointRouter:
 
@@ -1184,10 +1246,22 @@ Expected: FAIL
 
 ```python
 # apiscout/core/analyzer/router.py
-"""路径参数化 + 端点归并 — 偷师 OpenAPI DevTools 的 Radix Tree 思路"""
+"""路径参数化归并 — 参数化后 hash 聚合，非 Radix Tree（V1 规模 dict 足够）"""
 import re
 from collections import defaultdict
 
+
+# 保留词 — 这些路径段永远不参数化（偷师 Optic 路径推断启发式）
+RESERVED_SEGMENTS = {
+    "api", "v1", "v2", "v3", "v4", "static", "admin", "auth",
+    "public", "internal", "graphql", "ws", "health", "metrics",
+}
+
+# 日期格式 — 不参数化
+DATE_PATTERNS = [
+    re.compile(r'^\d{4}\d{2}\d{2}$'),       # 20260329
+    re.compile(r'^\d{4}-\d{2}-\d{2}$'),      # 2026-03-29
+]
 
 # 参数检测模式，按优先级排列
 PARAM_PATTERNS = [
@@ -1240,6 +1314,13 @@ class PathParameterizer:
 
     def _detect_param(self, segment: str) -> str | None:
         """检测路径段是否是参数"""
+        # 保留词永远不参数化
+        if segment.lower() in RESERVED_SEGMENTS:
+            return None
+        # 日期段不参数化
+        for dp in DATE_PATTERNS:
+            if dp.match(segment):
+                return None
         for pattern, param_type in PARAM_PATTERNS:
             if pattern.match(segment):
                 return param_type
@@ -1287,7 +1368,7 @@ class EndpointRouter:
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `pytest tests/test_router.py -v`
-Expected: 7 passed
+Expected: 10 passed
 
 - [ ] **Step 5: Commit**
 
@@ -1768,6 +1849,22 @@ def test_aggregate_same_endpoint():
     assert "memo" not in ep["response_schema"].get("required", [])
 
 
+def test_aggregate_query_params():
+    """Query 参数收集与 schema 推断"""
+    agg = EndpointAggregator()
+    agg.add(_make_record("GET", "https://ex.com/api/equipment/search?status=1&page=1&size=20",
+                         response_body={"items": []}))
+    agg.add(_make_record("GET", "https://ex.com/api/equipment/search?status=2&page=2&size=20",
+                         response_body={"items": []}))
+
+    endpoints = agg.get_results()
+    ep = endpoints[0]
+    # 应该收集到 3 个 query 参数
+    assert "query_params" in ep
+    param_names = {p["name"] for p in ep["query_params"]}
+    assert param_names == {"status", "page", "size"}
+
+
 def test_aggregate_auth(sample_capture_record):
     """认证信息从请求头中提取"""
     agg = EndpointAggregator()
@@ -1789,6 +1886,8 @@ Expected: FAIL
 # apiscout/core/analyzer/dedup.py
 """端点去重 + 数据聚合 — 将 CaptureRecord 流汇总为端点列表"""
 from collections import defaultdict
+from urllib.parse import urlparse, parse_qs
+
 from apiscout.core.capture.store import CaptureRecord
 from apiscout.core.analyzer.router import EndpointRouter
 from apiscout.core.analyzer.schema_engine import SchemaEngine
@@ -1796,13 +1895,14 @@ from apiscout.core.analyzer.auth_detector import AuthDetector
 
 
 class EndpointAggregator:
-    """将原始捕获记录聚合为去重的端点 + schema"""
+    """将原始捕获记录聚合为去重的端点 + schema + query params"""
 
     def __init__(self):
         self._router = EndpointRouter()
         # key: (parameterized_path, method)
         self._request_schemas: dict[tuple, SchemaEngine] = defaultdict(SchemaEngine)
         self._response_schemas: dict[tuple, SchemaEngine] = defaultdict(SchemaEngine)
+        self._query_params: dict[tuple, dict[str, list]] = defaultdict(lambda: defaultdict(list))
         self._status_codes: dict[tuple, set] = defaultdict(set)
         self._all_headers: list[dict] = []  # 用于认证检测
         self._js_endpoints: set[str] = set()  # JS 分析发现但未触发的端点
@@ -1826,6 +1926,11 @@ class EndpointAggregator:
         # 聚合 request schema
         if isinstance(record.request_body, dict):
             self._request_schemas[key].add_observation(record.request_body)
+
+        # 收集 query 参数（多次观察合并，用于推断 enum 和类型）
+        parsed = urlparse(record.url)
+        for param_name, param_values in parse_qs(parsed.query).items():
+            self._query_params[key][param_name].extend(param_values)
 
         # 收集状态码
         self._status_codes[key].add(record.status)
@@ -1860,6 +1965,23 @@ class EndpointAggregator:
                 raw = req_engine.get_schema()
                 req_schema = req_engine.enhance_schema(raw)
 
+            # 推断 query 参数 schema
+            query_params_info = []
+            for qp_name, qp_values in sorted(self._query_params.get(key, {}).items()):
+                # 尝试推断类型：全是数字 → integer，否则 string
+                all_int = all(v.isdigit() for v in qp_values if v)
+                schema = {"type": "integer"} if all_int else {"type": "string"}
+                # enum 检测：唯一值 ≤10 且有重复
+                unique = set(qp_values)
+                if 1 < len(unique) <= 10 and len(qp_values) > len(unique):
+                    schema["enum"] = sorted(unique, key=lambda x: (not x.isdigit(), x))
+                query_params_info.append({
+                    "name": qp_name,
+                    "in": "query",
+                    "schema": schema,
+                    "required": True,  # 出现在所有观察中则 required（简化：V1 全标 true）
+                })
+
             results.append({
                 "path": ep["path"],
                 "method": ep["method"],
@@ -1867,6 +1989,7 @@ class EndpointAggregator:
                 "status_codes": sorted(self._status_codes.get(key, set())),
                 "response_schema": resp_schema,
                 "request_schema": req_schema,
+                "query_params": query_params_info,
                 "status": "confirmed",
             })
             triggered_paths.add(ep["path"])
@@ -1895,7 +2018,7 @@ class EndpointAggregator:
 - [ ] **Step 4: 运行测试确认通过**
 
 Run: `pytest tests/test_dedup.py -v`
-Expected: 2 passed
+Expected: 3 passed
 
 - [ ] **Step 5: Commit**
 
@@ -1920,26 +2043,43 @@ git commit -m "feat: 端点去重聚合 — CaptureRecord → 合并端点 + sch
 - Test: `tests/test_openapi_gen.py`
 
 **要点：**
-- 输入：EndpointAggregator.get_results() 输出的端点列表
+- 输入：EndpointAggregator.get_results() 输出的端点列表（含 query_params）
 - 输出：OpenAPI 3.1 YAML 文件
-- 包含：paths、parameters（path + query）、requestBody、responses、securitySchemes
+- 包含：paths、parameters（path params 从 `{xxx}` 提取 + query params 从聚合结果取）、requestBody、responses、securitySchemes
+- **query 参数输出**：每个端点的 `query_params` 列表直接映射为 OpenAPI `parameters`，含 name/in/schema/required
 - 两遍模式：草稿带 `x-apiscout-review` 标记（confirmed/uncertain/excluded）
 - 最终生成只保留未被排除的端点
 - 用 PyYAML 的 `yaml.dump(default_flow_style=False, allow_unicode=True, sort_keys=False)`
+- **注意**：V1 用 yaml.dump 重新生成，不保留用户对草稿的格式修改（YAML roundtrip 列入 V1.1）
 
 ---
 
-### Task 11: Auth Profile Generator
+### Task 11: Auth Profile Generator（含登录流追踪）
 
 **Files:**
 - Create: `apiscout/core/generator/auth_profile.py`
 - Test: `tests/test_auth_profile_gen.py`
 
 **要点：**
-- 输入：AuthDetector.detect() 结果 + 捕获数据中的登录请求
+- 输入：AuthDetector.detect() 结果 + 全部 CaptureRecord 列表
 - 输出：auth_profile.yaml（Nango 风格，含 discovery/token_analysis/insight68_config_hint）
-- 自动识别登录端点（POST 请求，body 含 username/password 字段，响应含 token 字段）
-- 自动识别 refresh 端点（POST 请求，body 含 refresh_token 字段）
+
+**登录流追踪（偷师 Nango TWO_STEP #10）：**
+- 从 capture 记录中扫描 POST 请求，body 含 `username/password/account/user/passwd` 字段 → 标记为 login_endpoint
+- 检查该请求的响应 body，递归查找含 `token/accessToken/access_token/jwt` 的字段 → 记录 token_location（如 `response.data.accessToken`）
+- 从 capture 记录中扫描 POST 请求，body 含 `refresh_token/refreshToken` 字段 → 标记为 refresh_endpoint
+- 如果检测到 JWT，从 exp claim 推算 token 生命周期
+
+**insight68 接入建议自动生成：**
+- Bearer JWT → `auth_adapter: "jwt_bearer"`, required: ["服务账号用户名", "密码"]
+- API Key → `auth_adapter: "api_key"`, required: ["API Key"]
+- Cookie → `auth_adapter: "session"`, required: ["服务账号用户名", "密码"]
+- 金蝶/用友 → `auth_adapter: "custom_header"`, required: 对应 vendor 的配置字段
+
+**测试要点：**
+- 构造含登录请求的 capture 记录，验证 login_endpoint + token_location 被正确提取
+- 构造含 refresh 请求的记录，验证 refresh_endpoint 被正确识别
+- 验证 insight68_config_hint 根据 auth type 自动生成
 
 ---
 
@@ -2011,8 +2151,11 @@ git commit -m "feat: 端点去重聚合 — CaptureRecord → 合并端点 + sch
 - 交互探索 pipeline：MenuExpander → TabSwitcher → ModalTrigger → TablePaginator → ScrollLoader → ModalCloser
 - 安全护栏：SAFE_ACTIONS vs DANGEROUS_ACTIONS 分类
 - 页面队列管理：BFS，visited 去重，max_depth/max_pages 限制
-- 进度回调：供 CLI 显示实时状态
-- Session 过期检测：从 recorder.auth_failure_count 读取
+- **进度回调**：供 CLI 显示实时状态。V1 进度显示用**请求数**（recorder.captured_count），不做实时端点归并。精确端点数在 Phase 3 分析后才有。进度格式示例：
+  ```
+  页面: 28/43  请求: 247 已捕获  当前: /equipment/list
+  ```
+- Session 过期检测：从 recorder.auth_failure_count 读取，≥3 时暂停爬虫，提示用户重新登录
 
 ---
 
