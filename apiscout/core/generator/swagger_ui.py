@@ -106,22 +106,37 @@ def generate_swagger_html(
 
 
 def _flatten_refs_for_display(spec: dict) -> dict:
-    """把所有 $ref 替换为可读的内联描述（HTML 文档专用）"""
+    """内联展开 $ref（1 层深），嵌套关联用描述替代（HTML 文档专用）
 
-    def flatten(obj):
+    效果：Response 的 Example Value 能显示完整字段，而不是空 {}
+    """
+    import copy
+    schemas = spec.get("components", {}).get("schemas", {})
+
+    def resolve_ref(ref_str: str, depth: int) -> dict:
+        """解析一个 $ref，depth=0 时完整内联，depth>0 时只放描述"""
+        name = ref_str.split("/")[-1] if "/" in ref_str else ref_str
+        if name not in schemas:
+            return {"type": "object", "description": f"关联实体: {name}"}
+        if depth > 0:
+            return {"type": "object", "description": f"关联实体: {name}"}
+        # depth=0：完整内联该 schema 的字段，但其中的 $ref 用 depth+1 处理
+        return flatten(copy.deepcopy(schemas[name]), depth + 1)
+
+    def flatten(obj, depth=0):
         if isinstance(obj, dict):
-            if "$ref" in obj:
-                ref = obj["$ref"]
-                name = ref.split("/")[-1] if "/" in ref else ref
-                # 如果是 array items 里的 $ref
-                return {"type": "object", "description": f"关联实体: {name}"}
-            return {k: flatten(v) for k, v in obj.items()}
+            if "$ref" in obj and isinstance(obj["$ref"], str):
+                return resolve_ref(obj["$ref"], depth)
+            return {k: flatten(v, depth) for k, v in obj.items()}
         elif isinstance(obj, list):
-            return [flatten(item) for item in obj]
+            return [flatten(item, depth) for item in obj]
         return obj
 
-    spec["paths"] = flatten(spec.get("paths", {}))
-    # 保留 components/schemas 供 Models 区域展示，但也 flatten 里面的 $ref
+    spec["paths"] = flatten(spec.get("paths", {}), depth=0)
+    # components/schemas 里的 $ref 也处理（depth=1，只替换为描述）
     if "components" in spec and "schemas" in spec["components"]:
-        spec["components"]["schemas"] = flatten(spec["components"]["schemas"])
+        for name in spec["components"]["schemas"]:
+            spec["components"]["schemas"][name] = flatten(
+                spec["components"]["schemas"][name], depth=1
+            )
     return spec
