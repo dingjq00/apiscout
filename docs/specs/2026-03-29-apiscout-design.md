@@ -8,6 +8,10 @@
 
 ## 1. 产品定位
 
+### 项目背景
+
+2026-03-29，insight68 项目的 L1-L5 质量评估暴露了严重问题（L3 全军覆没、L5 trend 聚合崩溃）。dingjq 决定：insight68 的质量问题交给那边的伙伴修，我们来做一个一直想做的实施工具 — 自动抓取客户系统 API。
+
 ### 一句话
 
 给我一个 URL，还你一份 OpenAPI spec。
@@ -305,7 +309,41 @@ response_body 存解析后的 JSON（不是原始字符串），方便后续 AI 
 
 ### Session 过期处理
 
-监控响应状态码，连续出现 3 个 401/403 时暂停爬虫���提示用户重新登录。
+监控响应状态码，连续出现 3 个 401/403 时暂停爬虫，提示用户重新登录。
+
+### 多角色扫描
+
+一个账号看不全所有功能。支持 `--append` 模式多次扫描：
+
+```bash
+# 第一次：管理员账号
+apiscout explore --url https://eam.customer.com -o capture.jsonl
+
+# 第二次：普通用户（追加到同一个文件）
+apiscout explore --url https://eam.customer.com -o capture.jsonl --append
+
+# 分析时自动合并去重
+apiscout analyze capture.jsonl -o draft_spec.yaml
+```
+
+不同角色看到的端点并集 = 更完整的 API 覆盖。
+
+### 进度显示
+
+Phase 1 自动爬取期间，终端实时显示状态：
+
+```
+🔍 APIScout 自动探索中...
+
+  页面: [===========     ] 28/43  当前: /equipment/list
+  API:  89 个端点已捕获 (67 GET, 18 POST, 3 PUT, 1 DELETE)
+  JS:   23 个端点从源码发现
+  耗时: 12:35 / 预估剩余: ~8 分钟
+
+  最近捕获:
+    GET /api/equipment/search?status=1&page=2  → 200 (1.2s)
+    GET /api/fault/list?equipmentId=1666       → 200 (0.8s)
+```
 
 ---
 
@@ -425,6 +463,16 @@ insight68 生产环境调客户 API 时的三种方案：
 ---
 
 ## 8. 输出物
+
+### 为什么输出 OpenAPI 而非直接生成 MCP Tool？
+
+dingjq 的洞察：**"有些系统本身就可以提供 swagger"**。
+
+这意味着有两条路通向 insight68 MCP Tool：
+1. 系统自带 Swagger → 直接拿 OpenAPI spec
+2. 系统没有文档 → APIScout 抓包生成 OpenAPI spec
+
+两条路汇合到同一个格式（OpenAPI），downstream 的 MCP Tool 生成只需要一套逻辑。OpenAPI 是中间层标准，不是最终产物。
 
 ### 四件输出
 
