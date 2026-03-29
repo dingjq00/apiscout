@@ -79,30 +79,7 @@ class PageRecorder:
         resource_type = request.resource_type
         content_type = response.headers.get("content-type", "")
 
-        # 自动检测 origin 变化（子域名跳转 www→www2 / 跨端口 82→48080）
-        from urllib.parse import urlparse
-        req_parsed = urlparse(request.url)
-        filter_parsed = urlparse(self.filter.target_origin)
-        req_origin = f"{req_parsed.scheme}://{req_parsed.netloc}"
-
-        if req_origin != self.filter.target_origin and resource_type in ("fetch", "xhr"):
-            req_host = req_parsed.hostname or ""
-            filter_host = filter_parsed.hostname or ""
-
-            # 情况 1：同一 hostname 不同端口（localhost:82 → localhost:48080）
-            same_host_diff_port = (req_host == filter_host)
-
-            # 情况 2：同一基础域名的子域名（www → www2）
-            req_base = ".".join(req_host.split(".")[-2:]) if "." in req_host else req_host
-            filter_base = ".".join(filter_host.split(".")[-2:]) if "." in filter_host else filter_host
-            same_base_domain = (req_base == filter_base and req_host != filter_host)
-
-            if same_host_diff_port or same_base_domain:
-                logger.info("检测到 origin 变化: %s → %s，自动更新过滤器",
-                           self.filter.target_origin, req_origin)
-                self.filter.target_origin = req_origin
-
-        # 过滤
+        # 过滤（filter 已改为黑名单模式，不再需要 origin 自动切换）
         if not self.filter.should_capture(
             url=request.url,
             resource_type=resource_type,

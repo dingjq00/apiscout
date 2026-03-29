@@ -26,6 +26,15 @@ class RequestFilter:
         self.target_origin = f"{parsed.scheme}://{parsed.netloc}"
         self.exclude_patterns = exclude_patterns or []
 
+    # 已知的第三方域名 — 这些是分析/广告/CDN，不是客户 API
+    THIRD_PARTY_DOMAINS = {
+        "google-analytics.com", "googleapis.com", "gstatic.com",
+        "baidu.com", "hm.baidu.com", "cnzz.com", "umeng.com",
+        "sentry.io", "bugsnag.com", "hotjar.com",
+        "cdn.jsdelivr.net", "unpkg.com", "cdnjs.cloudflare.com",
+        "fonts.googleapis.com", "fonts.gstatic.com",
+    }
+
     def should_capture(self, url: str, resource_type: str,
                        content_type: str, status: int) -> bool:
         """判断这个请求是否应该被捕获"""
@@ -33,10 +42,11 @@ class RequestFilter:
         if resource_type not in self.CAPTURE_TYPES:
             return False
 
-        # 2. 同源检查
         parsed = urlparse(url)
-        origin = f"{parsed.scheme}://{parsed.netloc}"
-        if origin != self.target_origin:
+
+        # 2. 排除已知第三方（分析/CDN/字体），而非严格同源
+        hostname = parsed.hostname or ""
+        if any(hostname.endswith(d) for d in self.THIRD_PARTY_DOMAINS):
             return False
 
         # 3. 文件扩展名过滤
