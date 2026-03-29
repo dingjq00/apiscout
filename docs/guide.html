@@ -52,7 +52,28 @@
 <span class="output"># 完成！</span>
 </div>
 
-<h3>方式 B：同事的 Windows 电脑没有 Python（离线安装）</h3>
+<h3>方式 B：同事的 Windows 电脑没有 Python（在线安装）</h3>
+
+<p>电脑能联网的情况下，右键用 PowerShell 运行：</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-content">
+    <div class="step-title">右键 <code>pack/setup_portable.ps1</code> → 用 PowerShell 运行</div>
+    <p>或在 cmd 中：<code>powershell -ExecutionPolicy Bypass -File pack\setup_portable.ps1</code></p>
+    <p>自动下载 Python 3.11 + pip + 所有依赖 + Chromium 浏览器引擎，约 5 分钟</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-content">
+    <div class="step-title">完成后双击生成的「启动APIScout.bat」</div>
+    <p>Web 面板自动启动，浏览器自动打开</p>
+  </div>
+</div>
+
+<h3>方式 C：同事的 Windows 电脑没有 Python（离线安装，无需联网）</h3>
 
 <div class="step">
   <div class="step-num">1</div>
