@@ -87,7 +87,7 @@ async def main():
         logger.info("")
         logger.info(">>> 探测已知 API 文档端点...")
         from apiscout.core.crawler.api_prober import probe_api_endpoints, summarize_probe_results
-        probe_results = await probe_api_endpoints(page, target_origin)
+        probe_results = await probe_api_endpoints(page, target_origin, output_dir=str(output_dir))
         probe_summary = summarize_probe_results(probe_results)
 
         if probe_summary["openapi_spec"]:

@@ -55,21 +55,25 @@ class ProbeResult:
 async def probe_api_endpoints(
     page,
     base_url: str,
-    timeout: int = 5000,
+    output_dir: str | None = None,
 ) -> list[ProbeResult]:
     """
     主动探测已知 API 文档端点。
 
     使用浏览器的 fetch 发请求（自动带 cookie/session），
     这样已登录的 session 也能探测到需要认证的端点。
+    对 OpenAPI/Swagger 端点，直接在浏览器里下载到本地文件（避免大 JSON 传输超限）。
     """
     results = []
 
     for endpoint in PROBE_ENDPOINTS:
         url = urljoin(base_url, endpoint["path"])
+        is_spec_endpoint = endpoint["type"] in ("openapi", "swagger")
+
         try:
             # 用页面内 JS 发 fetch，自动携带 session
-            # 大 body 只取前 200KB 避免 evaluate 传输超限
+            # 普通端点：body 截断到 50KB
+            # OpenAPI spec 端点：只取前 200 字符判断格式，完整内容另存
             probe_js = f"""
             async () => {{
                 try {{
@@ -79,19 +83,23 @@ async def probe_api_endpoints(
                     }});
                     const ct = resp.headers.get("content-type") || "";
                     let body = null;
+                    let fullBody = null;
                     const isJson = ct.includes("json");
                     if (isJson) {{
                         const text = await resp.text();
-                        body = text.substring(0, 200000);
+                        body = text.substring(0, 50000);
+                        fullBody = {'true' if is_spec_endpoint else 'false'} ? text : null;
                     }}
                     return {{
                         status: resp.status,
                         content_type: ct,
                         body: body,
+                        fullBody: fullBody,
                         is_json: isJson,
+                        bodySize: body ? body.length : 0,
                     }};
                 }} catch (e) {{
-                    return {{status: 0, content_type: "", body: null, is_json: false, error: e.message}};
+                    return {{status: 0, content_type: "", body: null, fullBody: null, is_json: false, error: e.message}};
                 }}
             }}
             """
@@ -115,6 +123,23 @@ async def probe_api_endpoints(
                     body = json.loads(resp["body"])
                 except (json.JSONDecodeError, TypeError):
                     body = resp["body"]
+
+            # 对 OpenAPI/Swagger spec 端点，保存完整 JSON 到文件
+            if is_spec_endpoint and status == 200 and is_json and resp.get("fullBody") and output_dir:
+                try:
+                    full_body = json.loads(resp["fullBody"])
+                    if isinstance(full_body, dict) and ("openapi" in full_body or "swagger" in full_body):
+                        from pathlib import Path
+                        spec_file = Path(output_dir) / "discovered_spec.yaml"
+                        import yaml
+                        with open(spec_file, "w", encoding="utf-8") as f:
+                            yaml.dump(full_body, f, default_flow_style=False,
+                                     allow_unicode=True, sort_keys=False)
+                        body = full_body  # 用完整的作为 body
+                        logger.info("已保存完整 OpenAPI spec: %s (%d 字节)",
+                                   spec_file, len(resp["fullBody"]))
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning("OpenAPI spec 解析失败: %s", e)
 
             result = ProbeResult(
                 path=endpoint["path"],
