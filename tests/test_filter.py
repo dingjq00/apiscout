@@ -44,7 +44,37 @@ class TestRequestFilter:
         )
 
 
+    def test_reject_vaadin_uidl(self):
+        """Vaadin UIDL 框架内部通信被过滤"""
+        f = RequestFilter(target_origin="https://eam.example.com")
+        assert not f.should_capture(
+            url="https://eam.example.com/?v-r=uidl&v-uiId=0",
+            resource_type="xhr",
+            content_type="application/json",
+            status=200,
+        )
+
+    def test_reject_vaadin_init(self):
+        """Vaadin init 被过滤"""
+        f = RequestFilter(target_origin="https://eam.example.com")
+        assert not f.should_capture(
+            url="https://eam.example.com/?v-r=init&location=main",
+            resource_type="xhr",
+            content_type="application/json",
+            status=200,
+        )
+
+
 class TestProtocolDetector:
+
+    def test_detect_vaadin(self):
+        """检测 Vaadin UIDL 协议"""
+        d = ProtocolDetector()
+        assert d.classify(
+            url="https://eam.example.com/?v-r=uidl&v-uiId=0",
+            request_body={"csrfToken": "xxx", "rpc": []},
+            response_content_type="application/json",
+        ) == "vaadin"
 
     def test_detect_rest_json(self):
         d = ProtocolDetector()

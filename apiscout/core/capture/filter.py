@@ -1,6 +1,15 @@
 """请求过滤 + 协议检测"""
 import fnmatch
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
+
+
+# 已知 UI 框架的内部通信 query 参数 — 这些不是 REST API
+FRAMEWORK_QUERY_MARKERS = {
+    "v-r",          # Vaadin (uidl/init/heartbeat)
+    "v-uiId",       # Vaadin UI ID
+    "__jsf_",       # JSF (Java Server Faces)
+    "wicket:",      # Apache Wicket
+}
 
 
 class RequestFilter:
@@ -35,7 +44,13 @@ class RequestFilter:
         if any(path.endswith(ext) for ext in self.SKIP_EXTENSIONS):
             return False
 
-        # 4. 排除模式
+        # 4. UI 框架内部通信过滤（Vaadin/JSF/Wicket 等）
+        if parsed.query:
+            query_keys = set(parse_qs(parsed.query).keys())
+            if query_keys & FRAMEWORK_QUERY_MARKERS:
+                return False
+
+        # 5. 排除模式
         for pattern in self.exclude_patterns:
             if fnmatch.fnmatch(parsed.path, pattern):
                 return False
@@ -47,8 +62,15 @@ class ProtocolDetector:
     """从请求/响应特征判断 API 协议类型"""
 
     def classify(self, url: str, request_body, response_content_type: str) -> str:
+        parsed = urlparse(url)
+        query = parsed.query
+
+        # Vaadin UIDL/init — 框架内部协议，不是 REST
+        if "v-r=" in query:
+            return "vaadin"
+
         # GraphQL: URL 包含 graphql，或 body 有 query 字段
-        path = urlparse(url).path.rstrip("/")
+        path = parsed.path.rstrip("/")
         if path.endswith("/graphql") or path.endswith("/gql"):
             return "graphql"
         if isinstance(request_body, dict) and "query" in request_body:
