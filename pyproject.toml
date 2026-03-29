@@ -1,0 +1,24 @@
+[project]
+name = "apiscout"
+version = "0.1.0"
+description = "自动化 API 发现与文档生成工具"
+requires-python = ">=3.11"
+dependencies = [
+    "playwright>=1.40",
+    "genson>=1.2",
+    "pyyaml>=6.0",
+    "jinja2>=3.1",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+ai = ["openai>=1.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+pack = ["pyinstaller>=6.0"]
+
+[project.scripts]
+apiscout = "apiscout.ui.cli:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
