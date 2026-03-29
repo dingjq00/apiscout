@@ -1,7 +1,6 @@
 """认证模式检测 — 偷师 OpenAPI DevTools + 中国 ERP 非标扩展"""
 import base64
 import json
-import re
 
 
 # 已知的 API Key 头名
