@@ -184,6 +184,18 @@ async def main():
     logger.info(">>> 生成输出...")
     generate_outputs(analysis, str(output_dir), title=f"{parsed.netloc} API", base_url=target_origin)
 
+    # 如果适配器生成了更好的 spec，用它覆盖 workflow 生成的 api_docs
+    if adapter_spec:
+        from apiscout.core.generator.swagger_ui import generate_swagger_html
+        generate_swagger_html(
+            spec=adapter_spec,
+            output_path=str(output_dir / "api_docs.html"),
+            title=f"{parsed.netloc} API",
+            generated_at=__import__("datetime").datetime.now().strftime("%Y-%m-%d"),
+        )
+        logger.info("api_docs.html 已更新为适配器生成的完整版（%d 端点）",
+                    len(adapter_spec.get("paths", {})))
+
     logger.info("")
     logger.info("=" * 60)
     logger.info("完成! 输出:")
@@ -193,6 +205,13 @@ async def main():
         val = size if size < 1024 else size // 1024
         logger.info("   %s (%d%s)", f.name, val, unit)
     logger.info("=" * 60)
+
+    # 自动打开交互式文档
+    docs_path = output_dir / "api_docs.html"
+    if docs_path.exists():
+        import webbrowser
+        webbrowser.open(f"file://{docs_path.resolve()}")
+        logger.info("已在浏览器中打开 api_docs.html")
 
 
 if __name__ == "__main__":
