@@ -1,0 +1,10 @@
+tool: APIScout
+version: 0.1.0
+generated_at: '2026-03-29T12:04:56.752260+00:00'
+title: localhost:8080 API
+stats:
+  total_records: 47
+  total_endpoints: 2
+  confirmed: 2
+  uncertain: 0
+auth_type: none

@@ -1,0 +1,5 @@
+auth:
+  type: none
+insight68_config_hint:
+  auth_adapter: none
+  required_from_customer: []
