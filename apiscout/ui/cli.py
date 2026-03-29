@@ -151,16 +151,31 @@ async def _scan(url, output, title, manual, append):
             click.echo()
             click.echo(f"自动探索完成: {explore_result['pages_visited']} 页, {explore_result['requests_captured']} 请求")
 
-        # Phase 2: 手动补录
+        # Phase 2: 手动补录（实时显示捕获计数）
         click.echo()
         click.echo("=" * 50)
         click.echo("浏览器保持打开，你可以自由操作系统")
         click.echo("所有操作都在录制中")
-        click.echo(f"当前已捕获: {recorder.captured_count} 请求")
         click.echo("完成后按 Enter 生成文档")
         click.echo("=" * 50)
-        await asyncio.get_event_loop().run_in_executor(None, input)
 
+        # 后台定时刷新捕获计数
+        stop_counter = asyncio.Event()
+
+        async def _show_counter():
+            last = 0
+            while not stop_counter.is_set():
+                current = recorder.captured_count
+                if current != last:
+                    click.echo(f"\r  录制中... 已捕获 {current} 请求", nl=False)
+                    last = current
+                await asyncio.sleep(1)
+
+        counter_task = asyncio.create_task(_show_counter())
+        await asyncio.get_event_loop().run_in_executor(None, input)
+        stop_counter.set()
+        await counter_task
+        click.echo()  # 换行
         click.echo(f"最终捕获: {recorder.captured_count} 请求")
         store.close()
         await browser.close()
