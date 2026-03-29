@@ -21,7 +21,7 @@ def main(debug):
 
 @main.command()
 @click.argument("url")
-@click.option("--output", "-o", default="./output", help="输出目录")
+@click.option("--output", "-o", default=None, help="输出目录（默认自动用域名命名）")
 @click.option("--title", default=None, help="API 文档标题")
 @click.option("--manual", is_flag=True, help="纯手动模式（不自动探索，只录你的操作）")
 @click.option("--append", is_flag=True, help="追加模式（多次扫描累积数据）")
@@ -32,8 +32,13 @@ def scan(url, output, title, manual, append):
     示例：
       apiscout scan https://eam.customer.com
       apiscout scan https://eam.customer.com --manual
-      apiscout scan https://eam.customer.com --append
+      apiscout scan https://eam.customer.com -o ./my_output
     """
+    from urllib.parse import urlparse
+    # 默认输出目录用域名命名
+    if not output:
+        host = urlparse(url).netloc.replace(":", "_")
+        output = f"./output/{host}"
     asyncio.run(_scan(url, output, title, manual, append))
 
 
