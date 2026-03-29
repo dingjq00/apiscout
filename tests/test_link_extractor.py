@@ -69,6 +69,24 @@ def test_exclude_patterns():
     assert "https://eam.example.com/static/logo.png" not in links
 
 
+def test_spa_hash_routes():
+    """SPA hash 路由（#/page）保留，纯锚点（#section）去掉"""
+    html = '''
+    <html><body>
+        <a href="#/devices">设备管理</a>
+        <a href="#/maintenance">维修保养</a>
+        <a href="#/inspection">点检巡检</a>
+        <a href="#section">页内锚点</a>
+    </body></html>
+    '''
+    links = extract_links_from_html(html, base_url="https://eam.example.com/#/home")
+    # SPA hash 路由应保留
+    assert any("#/devices" in l for l in links)
+    assert any("#/maintenance" in l for l in links)
+    # 纯锚点应去掉
+    assert not any(l.endswith("#section") for l in links)
+
+
 def test_skip_link_tags_and_static_resources():
     """不从 <link> 标签提取，不导航到静态资源"""
     html = '''

@@ -35,16 +35,23 @@ class _LinkParser(HTMLParser):
         attrs_dict = dict(attrs)
         for attr_name in LINK_ATTRIBUTES:
             value = attrs_dict.get(attr_name)
-            if value and not value.startswith(("javascript:", "mailto:", "tel:", "#")):
-                self.links.append(value)
+            if not value:
+                continue
+            # 跳过非导航链接，但保留 SPA hash 路由（#/ 开头）
+            if value.startswith(("javascript:", "mailto:", "tel:")):
+                continue
+            if value.startswith("#") and not value.startswith("#/"):
+                continue  # 纯锚点 #section 跳过，SPA 路由 #/page 保留
+            self.links.append(value)
 
 
 def normalize_url(url: str) -> str:
-    """URL 规范化：去 fragment，去尾部斜杠"""
+    """URL 规范化：去尾部斜杠，保留 SPA hash 路由"""
     parsed = urlparse(url)
-    # 去 fragment
-    normalized = parsed._replace(fragment="")
-    result = normalized.geturl()
+    # SPA hash 路由（#/ 开头）保留，纯锚点（#section）去掉
+    if parsed.fragment and not parsed.fragment.startswith("/"):
+        parsed = parsed._replace(fragment="")
+    result = parsed.geturl()
     # 去尾部斜杠（但保留根路径 /）
     if result.endswith("/") and urlparse(result).path != "/":
         result = result.rstrip("/")
