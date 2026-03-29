@@ -2,13 +2,18 @@
 
 ## 项目概述
 
-APIScout — 自动化 API 发现与文档生成工具。
+APIScout — 客户系统接入方案生成器。
 
-**一句话**：给我一个 URL，还你一份 OpenAPI spec。
+**一句话**：给我一个 URL（或数据库、或 Swagger 文件），还你一份完整的系统接入方案。
 
-**定位**：先解决 insight68 客户实施的痛点（快速发现客户系统 API），架构上保留通用化可能。
+**定位**：insight68 客户实施的核心工具。不管客户系统什么技术栈、有没有 API 文档，都能快速生成接入方案。
 
-**核心场景**：实施工程师到客户现场，U 盘插上去运行，自动发现客户 B/S 系统的全部后端 API，生成 OpenAPI 3.1 spec + 认证档案，回办公室用 AI 增强后直接转为 insight68 MCP Tool 定义。
+**核心场景**：
+1. **有 API 的系统**：录制操作 → 自动生成 OpenAPI spec → 转为 insight68 MCP Tool
+2. **有 Swagger 的系统**：直接导入 → 生成文档
+3. **有框架 metadata 的系统**（Jmix/Spring Boot）：适配器自动生成 spec
+4. **只有数据库的系统**（V1.1）：扫描 schema + 系统文档 → AI 生成 SQL 模板 → 转为 MCP Tool
+5. **U 盘便携部署**：Windows 离线安装，双击即用
 
 ## 设计文档
 
@@ -39,36 +44,62 @@ APIScout — 自动化 API 发现与文档生成工具。
 
 ```
 apiscout/
+├── adapters/                # 框架发现策略（@register 模式）
+│   ├── registry.py          #   注册表 + detect_framework()
+│   ├── jmix.py              #   Jmix metadata → spec
+│   ├── spring_boot.py       #   Spring Boot /v3/api-docs → spec
+│   └── ruoyi.py             #   若依 swagger → spec
 ├── core/                    # 核心引擎（纯逻辑，无 UI）
-│   ├── crawler/             # Phase 1 自动探索
-│   │   ├── navigator.py     #   页面导航 + 菜单/按钮交互
-│   │   ├── link_extractor.py#   DOM 链接提取
+│   ├── crawler/             # 页面探索
+│   │   ├── navigator.py     #   BFS + SPA 菜单点击 + 按钮探索
+│   │   ├── api_prober.py    #   API 文档端点探测（15 个已知端点）
+│   │   ├── link_extractor.py#   DOM 链接提取（含 hash 路由）
 │   │   ├── js_analyzer.py   #   JS 静态分析提取 API URL
 │   │   └── scroll_loader.py #   滚动加载触发
 │   ├── capture/             # 网络捕获层
-│   │   ├── recorder.py      #   page.on("response") 实时录制
-│   │   ├── filter.py        #   域名/资源类型/协议过滤
-│   │   └── store.py         #   JSONL 中间存储（增量写盘）
+│   │   ├── recorder.py      #   Playwright 响应监听 + 子域名自动跳转
+│   │   ├── filter.py        #   域名/资源类型/框架噪声过滤
+│   │   └── store.py         #   JSONL 增量写盘（崩溃安全）
 │   ├── analyzer/            # 分析推断引擎
 │   │   ├── schema_engine.py #   genson 多次合并 + format/enum 检测
-│   │   ├── router.py        #   路径参数化 + 端点归并
-│   │   ├── auth_detector.py #   认证模式检测
-│   │   └── dedup.py         #   去重
+│   │   ├── router.py        #   路径参数化归并 + 保留词排除
+│   │   ├── auth_detector.py #   认证检测（JWT/Basic/API Key/金蝶/用友）
+│   │   └── dedup.py         #   端点聚合 + query 参数推断
 │   ├── generator/           # 输出生成
-│   │   ├── openapi.py       #   OpenAPI 3.1 YAML 生成
-│   │   ├── auth_profile.py  #   认证档案
+│   │   ├── openapi.py       #   OpenAPI 3.1 YAML
+│   │   ├── jmix_spec.py     #   Jmix metadata → 完整 CRUD spec
+│   │   ├── swagger_ui.py    #   Swagger UI 单文件 HTML
+│   │   ├── auth_profile.py  #   认证档案（含登录流追踪）
 │   │   ├── report.py        #   HTML 覆盖率报告
-│   │   └── ai_enricher.py   #   AI 增强（可选，离线使用）
-│   └── workflow.py          # 两遍工作流编排
+│   │   └── ai_enricher.py   #   AI 增强（DeepSeek/OpenAI）
+│   ├── config.py            # 配置加载
+│   └── workflow.py          # 工作流编排
 ├── ui/
-│   ├── cli.py               # Click CLI 入口
-│   └── live_panel.py        # 实时捕获面板（V1.1）
+│   └── cli.py               # CLI（scan/import/analyze/enrich/web）
+├── web/
+│   └── app.py               # Web 面板（FastAPI + WebSocket）
 ├── config/
 │   └── default.yaml         # 默认配置
-├── tests/                   # 测试
-└── pack/
-    └── pyinstaller.spec     # 打包配置
+├── tests/                   # 119 个测试
+├── scripts/                 # 集成测试 + 调试工具
+└── pack/                    # 部署打包
+    ├── portable/            #   Windows 离线便携包（229MB）
+    ├── install_windows.bat  #   有 Python 时一键安装
+    ├── setup_portable.ps1   #   无 Python 时在线安装
+    └── run.bat              #   启动脚本
 ```
+
+## 与 insight68 的接口
+
+APIScout 输出 → insight68 MCP Tool 输入：
+
+| 客户情况 | APIScout 输出 | insight68 Tool 类型 |
+|---------|-------------|-------------------|
+| 有 REST API | OpenAPI spec | rest_api（调 API） |
+| 有 Swagger 文件 | 导入 → OpenAPI spec | rest_api |
+| 有框架 metadata | 适配器 → OpenAPI spec | rest_api |
+| 只有数据库（V1.1） | SQL 模板集 | db_query（查 DB） |
+| 有数据库+文档（V2） | AI 增强 SQL 模板 | db_query |
 
 ## 开发规范
 
@@ -81,36 +112,48 @@ apiscout/
 - 时间戳用 UTC
 
 ### 架构原则
-- **core/ 是纯逻辑**：不依赖任何 UI，可被 CLI 调用也可被未来 Web 面板调用
+- **core/ 是纯逻辑**：不依赖任何 UI，CLI / Web / 桌面端都能用
+- **adapters/ 是发现策略**：@register 注册，加新框架不改旧代码
 - **capture 只录不分析**：原始数据存 JSONL，分析交给 analyzer
-- **analyzer 只推断不关心数据来源**���可以吃 JSONL，也可以吃 HAR
+- **analyzer 只推断不关心数据来源**：可以吃 JSONL，也可以吃 HAR
+- **手动模式优先**：自动探索是锦上添花，录制+分析是核心
 - **V1 聚焦 REST + JSON**：其他协议标记发现但不解析
 
 ### 安全
 - 不在代码中硬编码密钥
 - capture.jsonl 含客户业务数据，不入库
 - AI enricher 的 API key 通过环境变量或 CLI 参数传入
+- 自动探索有安全护栏：不点删除/提交/保存等危险按钮
 
 ## 常用命令
 
 ```bash
-# 开发运行
-python -m apiscout scan --url https://target-system.com
+# Web 面板（推荐）
+apiscout web
 
-# 分步执行
-python -m apiscout explore --url https://target-system.com -o capture.jsonl
-python -m apiscout analyze capture.jsonl -o draft_spec.yaml
-python -m apiscout generate draft_spec.yaml -o output/
+# 扫描 — 手动模式（最稳定）
+apiscout scan https://target-system.com --manual
 
-# AI 增强���回办公室后）
-python -m apiscout enrich output/ --ai deepseek --api-key $DEEPSEEK_API_KEY
+# 扫描 — 自动+手动
+apiscout scan https://target-system.com
 
-# 打包
-pyinstaller pack/pyinstaller.spec --onedir
+# 导入已有 Swagger
+apiscout import swagger.json
+apiscout import https://target-system.com/v3/api-docs
 
-# 测试（用 dingjq 本机的 EAM/MOM 系统）
-# eamNge: /Users/dingjq/IdeaProjects/eamNge
-# momException: /Users/dingjq/IdeaProjects/momExcetion
+# 分析已有数据
+apiscout analyze output/target/capture.jsonl -o output/target
+
+# AI 增强
+apiscout enrich output/target --api-key $DEEPSEEK_API_KEY
+
+# 测试
+pytest tests/ -v
+
+# 测试系统
+# eamNge: /Users/dingjq/IdeaProjects/eamNge (Spring Boot)
+# momExecution: /Users/dingjq/IdeaProjects/momExcetion (Jmix+Vaadin)
+# gtshebei: https://www.gtshebei.com (Vue SPA)
 ```
 
 ## 偷师清单
