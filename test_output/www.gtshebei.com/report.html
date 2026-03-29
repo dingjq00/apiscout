@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>www.gtshebei.com API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #333; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #1a365d; margin-bottom: 20px; }
+        .summary { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-card { background: white; border-radius: 8px; padding: 16px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); min-width: 150px; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #2b6cb0; }
+        .stat-card .label { font-size: 13px; color: #718096; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #2b6cb0; color: white; padding: 12px 16px; text-align: left; font-size: 13px; }
+        td { padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        tr:nth-child(even) { background: #f7fafc; }
+        tr:hover { background: #edf2f7; }
+        .method { font-weight: bold; font-family: monospace; }
+        .method-get { color: #2b6cb0; }
+        .method-post { color: #2f855a; }
+        .method-put { color: #b7791f; }
+        .method-delete { color: #c53030; }
+        .status-confirmed { color: #2f855a; }
+        .status-uncertain { color: #b7791f; }
+        .status-excluded { color: #a0aec0; }
+        .phase2-hint { background: #fffbeb; border: 1px solid #f6e05e; border-radius: 8px; padding: 16px; margin-top: 24px; }
+        .phase2-hint h3 { color: #b7791f; margin-bottom: 8px; }
+        .phase2-hint ul { padding-left: 20px; margin-top: 8px; }
+        .phase2-hint li { margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>www.gtshebei.com API</h1>
+
+    <div class="summary">
+        <div class="stat-card">
+            <div class="number">44</div>
+            <div class="label">端点总数</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">43</div>
+            <div class="label">已确认</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">1</div>
+            <div class="label">待确认</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">1 / 42 / 0 / 0</div>
+            <div class="label">GET / POST / PUT / DELETE</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>方法</th>
+                <th>路径</th>
+                <th>观察次数</th>
+                <th>状态码</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/Login/UserLogin</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/BaseSparePart/GetCheckOrder</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/BaseSparePart/ListPurchaseApply</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/BaseSparePart/ListSparePart</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/CheckOut/GetPollingPlan</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Condition/getQueryCondition</code></td>
+                <td>12</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Condition/getQueryCondition1</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/DepartMent/ManageDepartMentTree</code></td>
+                <td>3</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/DeviceType/ManageDeviceTypeNoLevel</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/DeviceType/ManageDeviceTypeTree</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/DocType/GetDocTypeNoLevel</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Equipment/GetEquipmentList</code></td>
+                <td>3</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Equipment/GetSpeEquipmentType</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/EquipmentRepair/GetTroubleList</code></td>
+                <td>15</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/FieldSet/GetCriticalDeviceFields</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/FieldSet/GetFields</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetAwaitDoing</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetConfiguration</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetDeviceNum</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetHomeCarouselUrl</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetIntactDevicePercentage</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetInventoryWarning</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetMonthMaintainStatistics</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetMonthRepairStatistics</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetTroubleDeviceNum</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Home/GetUsingStatus</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Log/ListLog</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/ParameterSetting/GetCompanyInfo</code></td>
+                <td>3</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/PartRequisition/GetReviewAuthority</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/PartRequisition/ListPartRequisition</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/PartType/GetPartTypeNoLevel</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/PartType/GetPartTypeTree</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Role/GetCurUserPermission</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/SystemGuide/GetPartGuideStatistics</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/SystemGuide/GetPartReceiveSetting</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/SystemGuide/GetPersonList</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/SystemGuide/getRoles</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/SystemGuide/getRolesByPer</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/TableColumn/GetTableColumn</code></td>
+                <td>12</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/Token/NewLogin</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/User/GetUserList</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-post">POST</td>
+                <td><code>/api/WorkSection/GetWorkSectionsByDropdown</code></td>
+                <td>1</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-get">GET</td>
+                <td><code>/version.json</code></td>
+                <td>2</td>
+                <td>200</td>
+                <td class="status-confirmed">confirmed</td>
+            </tr>
+        
+            <tr>
+                <td class="method method-unknown">UNKNOWN</td>
+                <td><code>/api/Token/RefreshToken</code></td>
+                <td>0</td>
+                <td></td>
+                <td class="status-uncertain">uncertain</td>
+            </tr>
+        
+        </tbody>
+    </table>
+
+    
+    <div class="phase2-hint">
+        <h3>Phase 2 补录建议</h3>
+        <p>以下端点仅从 JS 源码中发现，未被实际触发。建议在 Phase 2 手动操作相关功能：</p>
+        <ul>
+        
+            <li><code>/api/Token/RefreshToken</code></li>
+        
+        </ul>
+    </div>
+    
+</div>
+</body>
+</html>

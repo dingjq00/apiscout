@@ -1,0 +1,3644 @@
+openapi: 3.1.0
+info:
+  title: www.gtshebei.com API
+  version: 1.0.0
+  description: 由 APIScout 自动发现并生成
+paths:
+  /Login/UserLogin:
+    post:
+      summary: POST /Login/UserLogin
+      responses:
+        '200':
+          description: HTTP 200
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/BaseSparePart/GetCheckOrder:
+    post:
+      summary: POST /api/BaseSparePart/GetCheckOrder
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+              required:
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/BaseSparePart/ListPurchaseApply:
+    post:
+      summary: POST /api/BaseSparePart/ListPurchaseApply
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+                AwaitDoing:
+                  type: integer
+              required:
+              - AwaitDoing
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/BaseSparePart/ListSparePart:
+    post:
+      summary: POST /api/BaseSparePart/ListSparePart
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            TotalStock:
+                              type: number
+                            PIC:
+                              type: string
+                            EQSP0101:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type: string
+                            ReviseTime:
+                              type: string
+                            EQSP01_EQPS1801:
+                              type: integer
+                            EQSP01_EQPS1802:
+                              type: string
+                            EQSP01_EQPS1806:
+                              type: string
+                            EQSP0102:
+                              type: string
+                            EQSP0103:
+                              type: string
+                            EQSP0104:
+                              type: 'null'
+                            EQSP0105:
+                              type: string
+                            EQSP0106:
+                              type: string
+                            EQSP0107:
+                              type: string
+                            EQSP0108:
+                              type:
+                              - 'null'
+                              - number
+                            EQSP0109:
+                              type: 'null'
+                            EQSP0110:
+                              type:
+                              - 'null'
+                              - number
+                            EQSP0111:
+                              type:
+                              - 'null'
+                              - number
+                            EQSP0112:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0114:
+                              type: number
+                            EQSP0115:
+                              type: 'null'
+                            EQSP0116:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0117:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0118:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0119:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0120:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0121:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0122:
+                              type: 'null'
+                            EQSP0123:
+                              type: 'null'
+                            EQSP0124:
+                              type: number
+                            EQSP0125:
+                              type: 'null'
+                            EQSP0126:
+                              type:
+                              - 'null'
+                              - number
+                            EQSP0127:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0128:
+                              type: string
+                            EQSP01_EQPS0702:
+                              type: 'null'
+                            EQSP01_EQPS0706:
+                              type: 'null'
+                            EQSP01_EQPS0701:
+                              type: 'null'
+                            EQSP0129:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0130:
+                              type: boolean
+                            EQSP0131:
+                              type: string
+                            EQSP0132:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0133:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0134:
+                              type:
+                              - 'null'
+                              - string
+                            EQSP0135:
+                              type:
+                              - 'null'
+                              - string
+                          required:
+                          - CreateTime
+                          - Creator
+                          - EQSP0101
+                          - EQSP0102
+                          - EQSP0103
+                          - EQSP0104
+                          - EQSP0105
+                          - EQSP0106
+                          - EQSP0107
+                          - EQSP0108
+                          - EQSP0109
+                          - EQSP0110
+                          - EQSP0111
+                          - EQSP0112
+                          - EQSP0114
+                          - EQSP0115
+                          - EQSP0116
+                          - EQSP0117
+                          - EQSP0118
+                          - EQSP0119
+                          - EQSP0120
+                          - EQSP0121
+                          - EQSP0122
+                          - EQSP0123
+                          - EQSP0124
+                          - EQSP0125
+                          - EQSP0126
+                          - EQSP0127
+                          - EQSP0128
+                          - EQSP0129
+                          - EQSP0130
+                          - EQSP0131
+                          - EQSP0132
+                          - EQSP0133
+                          - EQSP0134
+                          - EQSP0135
+                          - EQSP01_EQPS0701
+                          - EQSP01_EQPS0702
+                          - EQSP01_EQPS0706
+                          - EQSP01_EQPS1801
+                          - EQSP01_EQPS1802
+                          - EQSP01_EQPS1806
+                          - PIC
+                          - ReviseTime
+                          - Revisor
+                          - TotalStock
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+                quickSearch:
+                  type: string
+                EQSP0130:
+                  type: integer
+              required:
+              - EQSP0130
+              - page
+              - quickSearch
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/CheckOut/GetPollingPlan:
+    post:
+      summary: POST /api/CheckOut/GetPollingPlan
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            lastPollingResult:
+                              type: 'null'
+                            lastPollingTime:
+                              type: 'null'
+                            continuousUncheck:
+                              type: integer
+                            EQSI0101:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type: string
+                            ReviseTime:
+                              type: string
+                            EQSI0103:
+                              type: string
+                            EQSI0102:
+                              type: string
+                            EQSI01_EQPS0501:
+                              type: integer
+                            EQSI01_EQPS0502:
+                              type: string
+                            EQSI0104:
+                              type: string
+                            EQSI0105:
+                              type: string
+                            EQSI0106:
+                              type: 'null'
+                            EQSI0107:
+                              type: string
+                            EQSI0108:
+                              type: integer
+                            EQSI0109:
+                              type: 'null'
+                            EQSI0110:
+                              type: integer
+                            EQSI0111:
+                              type: string
+                            EQSI0112:
+                              type: integer
+                            EQSI0113:
+                              type: string
+                            EQSI0114:
+                              type: 'null'
+                            EQSI0115:
+                              type: 'null'
+                            EQSI0116:
+                              type: 'null'
+                            EQSI01_EQPS0506:
+                              type: string
+                            EQSI0117:
+                              type: string
+                            EQSI0118:
+                              type:
+                              - integer
+                              - 'null'
+                            EQSI0119:
+                              type:
+                              - 'null'
+                              - string
+                            EQSI0120:
+                              type: 'null'
+                            EQSI0121:
+                              type: integer
+                            EQSI0122:
+                              type: string
+                            EQSI0123:
+                              type: integer
+                            EQSI0124:
+                              type: string
+                            EQSI0125:
+                              type: string
+                            EQSI0126:
+                              type: string
+                            EQSI0127:
+                              type: string
+                            EQSI0128:
+                              type: integer
+                            EQSI0129:
+                              type: integer
+                            EQSI0130:
+                              type: string
+                            EQSI0131:
+                              type: string
+                            EQSI0132:
+                              type: string
+                            EQSI0133:
+                              type: string
+                            EQSI0134:
+                              type: string
+                            EQSI01_ISGPS:
+                              type:
+                              - integer
+                              - 'null'
+                          required:
+                          - CreateTime
+                          - Creator
+                          - EQSI0101
+                          - EQSI0102
+                          - EQSI0103
+                          - EQSI0104
+                          - EQSI0105
+                          - EQSI0106
+                          - EQSI0107
+                          - EQSI0108
+                          - EQSI0109
+                          - EQSI0110
+                          - EQSI0111
+                          - EQSI0112
+                          - EQSI0113
+                          - EQSI0114
+                          - EQSI0115
+                          - EQSI0116
+                          - EQSI0117
+                          - EQSI0118
+                          - EQSI0119
+                          - EQSI0120
+                          - EQSI0121
+                          - EQSI0122
+                          - EQSI0123
+                          - EQSI0124
+                          - EQSI0125
+                          - EQSI0126
+                          - EQSI0127
+                          - EQSI0128
+                          - EQSI0129
+                          - EQSI0130
+                          - EQSI0131
+                          - EQSI0132
+                          - EQSI0133
+                          - EQSI0134
+                          - EQSI01_EQPS0501
+                          - EQSI01_EQPS0502
+                          - EQSI01_EQPS0506
+                          - EQSI01_ISGPS
+                          - ReviseTime
+                          - Revisor
+                          - continuousUncheck
+                          - lastPollingResult
+                          - lastPollingTime
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+                DOCState:
+                  type: integer
+              required:
+              - DOCState
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Condition/getQueryCondition:
+    post:
+      summary: POST /api/Condition/getQueryCondition
+      responses:
+        '200':
+          description: HTTP 200
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                businessType:
+                  type: integer
+                  enum:
+                  - 1
+                  - 105
+                  - 106
+                  - 107
+                  - 201
+                  - 206
+                  - 301
+                  - 605
+              required:
+              - businessType
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 12
+  /api/Condition/getQueryCondition1:
+    post:
+      summary: POST /api/Condition/getQueryCondition1
+      responses:
+        '200':
+          description: HTTP 200
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                id:
+                  type: integer
+              required:
+              - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/DepartMent/ManageDepartMentTree:
+    post:
+      summary: POST /api/DepartMent/ManageDepartMentTree
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                    enum:
+                    - 操作成功
+                  Status:
+                    type: boolean
+                    enum:
+                    - true
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        index:
+                          type: string
+                        sequence:
+                          type: integer
+                        parentId:
+                          type: integer
+                        fullName:
+                          type: string
+                        childList:
+                          anyOf:
+                          - type: 'null'
+                          - type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                index:
+                                  type: string
+                                sequence:
+                                  type: integer
+                                parentId:
+                                  type: integer
+                                fullName:
+                                  type: string
+                                childList:
+                                  type: 'null'
+                              required:
+                              - childList
+                              - code
+                              - fullName
+                              - id
+                              - index
+                              - name
+                              - parentId
+                              - sequence
+                      required:
+                      - childList
+                      - code
+                      - fullName
+                      - id
+                      - index
+                      - name
+                      - parentId
+                      - sequence
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                  required:
+                  - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 3
+  /api/DeviceType/ManageDeviceTypeNoLevel:
+    post:
+      summary: POST /api/DeviceType/ManageDeviceTypeNoLevel
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        index:
+                          type: string
+                        HaveChild:
+                          type: integer
+                        parentId:
+                          type: integer
+                      required:
+                      - HaveChild
+                      - code
+                      - id
+                      - index
+                      - name
+                      - parentId
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                id:
+                  type: integer
+              required:
+              - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/DeviceType/ManageDeviceTypeTree:
+    post:
+      summary: POST /api/DeviceType/ManageDeviceTypeTree
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        index:
+                          type: string
+                        sequence:
+                          type: integer
+                        parentId:
+                          type: integer
+                        fullName:
+                          type: string
+                        childList:
+                          anyOf:
+                          - type: 'null'
+                          - type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                index:
+                                  type: string
+                                sequence:
+                                  type: integer
+                                parentId:
+                                  type: integer
+                                fullName:
+                                  type: string
+                                childList:
+                                  anyOf:
+                                  - type: 'null'
+                                  - type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        id:
+                                          type: integer
+                                        code:
+                                          type: string
+                                        name:
+                                          type: string
+                                        index:
+                                          type: string
+                                        sequence:
+                                          type: integer
+                                        parentId:
+                                          type: integer
+                                        fullName:
+                                          type: string
+                                        childList:
+                                          anyOf:
+                                          - type: 'null'
+                                          - type: array
+                                            items:
+                                              type: object
+                                              properties:
+                                                id:
+                                                  type: integer
+                                                code:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                                index:
+                                                  type: string
+                                                sequence:
+                                                  type: integer
+                                                parentId:
+                                                  type: integer
+                                                fullName:
+                                                  type: string
+                                                childList:
+                                                  anyOf:
+                                                  - type: 'null'
+                                                  - type: array
+                                                    items:
+                                                      type: object
+                                                      properties:
+                                                        id:
+                                                          type: integer
+                                                        code:
+                                                          type: string
+                                                        name:
+                                                          type: string
+                                                        index:
+                                                          type: string
+                                                        sequence:
+                                                          type: integer
+                                                        parentId:
+                                                          type: integer
+                                                        fullName:
+                                                          type: string
+                                                        childList:
+                                                          anyOf:
+                                                          - type: 'null'
+                                                          - type: array
+                                                            items:
+                                                              type: object
+                                                              properties:
+                                                                id:
+                                                                  type: integer
+                                                                code:
+                                                                  type: string
+                                                                name:
+                                                                  type: string
+                                                                index:
+                                                                  type: string
+                                                                sequence:
+                                                                  type: integer
+                                                                parentId:
+                                                                  type: integer
+                                                                fullName:
+                                                                  type: string
+                                                                childList:
+                                                                  type: 'null'
+                                                              required:
+                                                              - childList
+                                                              - code
+                                                              - fullName
+                                                              - id
+                                                              - index
+                                                              - name
+                                                              - parentId
+                                                              - sequence
+                                                      required:
+                                                      - childList
+                                                      - code
+                                                      - fullName
+                                                      - id
+                                                      - index
+                                                      - name
+                                                      - parentId
+                                                      - sequence
+                                              required:
+                                              - childList
+                                              - code
+                                              - fullName
+                                              - id
+                                              - index
+                                              - name
+                                              - parentId
+                                              - sequence
+                                      required:
+                                      - childList
+                                      - code
+                                      - fullName
+                                      - id
+                                      - index
+                                      - name
+                                      - parentId
+                                      - sequence
+                              required:
+                              - childList
+                              - code
+                              - fullName
+                              - id
+                              - index
+                              - name
+                              - parentId
+                              - sequence
+                      required:
+                      - childList
+                      - code
+                      - fullName
+                      - id
+                      - index
+                      - name
+                      - parentId
+                      - sequence
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/DocType/GetDocTypeNoLevel:
+    post:
+      summary: POST /api/DocType/GetDocTypeNoLevel
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: 'null'
+                        name:
+                          type: string
+                        index:
+                          type: 'null'
+                        HaveChild:
+                          type: integer
+                        parentId:
+                          type: integer
+                      required:
+                      - HaveChild
+                      - code
+                      - id
+                      - index
+                      - name
+                      - parentId
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                businessType:
+                  type: string
+                id:
+                  type: integer
+              required:
+              - businessType
+              - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/Equipment/GetEquipmentList:
+    post:
+      summary: POST /api/Equipment/GetEquipmentList
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                    enum:
+                    - 操作成功
+                  Status:
+                    type: boolean
+                    enum:
+                    - true
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            EQEQ0101:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type: string
+                            ReviseTime:
+                              type: string
+                            EQEQ0102:
+                              type: string
+                            EQEQ0103:
+                              type: string
+                            EQEQ0104:
+                              type: string
+                            EQEQ0105:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ01_EQPS0501:
+                              type: integer
+                            EQEQ01_EQPS0502:
+                              type: string
+                            EQEQ01_EQPS0506:
+                              type: string
+                            EQEQ0106:
+                              type: string
+                            EQEQ0107:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0108:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0109:
+                              type:
+                              - integer
+                              - 'null'
+                            EQEQ0110:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ01_EQPS0702:
+                              type: string
+                            EQEQ01_EQPS0701:
+                              type: integer
+                            EQEQ01_EQPS0706:
+                              type: string
+                            EQEQ0111:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0112:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0113:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0114:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0115:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0116:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0117:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0118:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0119:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0120:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0121:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0122:
+                              type:
+                              - 'null'
+                              - number
+                            EQEQ0123:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0124:
+                              type: 'null'
+                            EQEQ0125:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0126:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0127:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0128:
+                              type:
+                              - integer
+                              - 'null'
+                            EQEQ0129:
+                              type: integer
+                            EQEQ0130:
+                              type: 'null'
+                            EQEQ0131:
+                              type: 'null'
+                            EQEQ0132:
+                              type: integer
+                            EQEQ0133:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0134:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0135:
+                              type: 'null'
+                            EQEQ0136:
+                              type:
+                              - 'null'
+                              - number
+                            EQEQ0137:
+                              type: 'null'
+                            EQEQ0138:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0139:
+                              type:
+                              - integer
+                              - 'null'
+                            EQEQ0140:
+                              type: 'null'
+                            EQEQ0141:
+                              type: 'null'
+                            EQEQ0142:
+                              type: 'null'
+                            EQEQ0143:
+                              type: boolean
+                            EQEQ0144:
+                              type:
+                              - 'null'
+                              - number
+                            EQEQ0145:
+                              type: 'null'
+                            EQEQ0146:
+                              type: string
+                            EQEQ0147:
+                              type:
+                              - 'null'
+                              - string
+                            EQEQ0148:
+                              type: 'null'
+                            EQEQ0149:
+                              type: 'null'
+                            EQEQ01101:
+                              type: 'null'
+                            EQEQ01102:
+                              type: 'null'
+                            EQEQ01103:
+                              type: 'null'
+                            EQEQ01104:
+                              type: 'null'
+                            state:
+                              type: string
+                          required:
+                          - CreateTime
+                          - Creator
+                          - EQEQ0101
+                          - EQEQ0102
+                          - EQEQ0103
+                          - EQEQ0104
+                          - EQEQ0105
+                          - EQEQ0106
+                          - EQEQ0107
+                          - EQEQ0108
+                          - EQEQ0109
+                          - EQEQ0110
+                          - EQEQ01101
+                          - EQEQ01102
+                          - EQEQ01103
+                          - EQEQ01104
+                          - EQEQ0111
+                          - EQEQ0112
+                          - EQEQ0113
+                          - EQEQ0114
+                          - EQEQ0115
+                          - EQEQ0116
+                          - EQEQ0117
+                          - EQEQ0118
+                          - EQEQ0119
+                          - EQEQ0120
+                          - EQEQ0121
+                          - EQEQ0122
+                          - EQEQ0123
+                          - EQEQ0124
+                          - EQEQ0125
+                          - EQEQ0126
+                          - EQEQ0127
+                          - EQEQ0128
+                          - EQEQ0129
+                          - EQEQ0130
+                          - EQEQ0131
+                          - EQEQ0132
+                          - EQEQ0133
+                          - EQEQ0134
+                          - EQEQ0135
+                          - EQEQ0136
+                          - EQEQ0137
+                          - EQEQ0138
+                          - EQEQ0139
+                          - EQEQ0140
+                          - EQEQ0141
+                          - EQEQ0142
+                          - EQEQ0143
+                          - EQEQ0144
+                          - EQEQ0145
+                          - EQEQ0146
+                          - EQEQ0147
+                          - EQEQ0148
+                          - EQEQ0149
+                          - EQEQ01_EQPS0501
+                          - EQEQ01_EQPS0502
+                          - EQEQ01_EQPS0506
+                          - EQEQ01_EQPS0701
+                          - EQEQ01_EQPS0702
+                          - EQEQ01_EQPS0706
+                          - ReviseTime
+                          - Revisor
+                          - state
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                  enum:
+                  - 1
+                rows:
+                  type: integer
+                  enum:
+                  - 20
+                quickSearch:
+                  type: string
+                  enum:
+                  - ''
+                DOCState:
+                  type: integer
+                  enum:
+                  - 1
+                AwaitDoing:
+                  type: integer
+                TypeId:
+                  type: integer
+              required:
+              - DOCState
+              - page
+              - quickSearch
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 3
+  /api/Equipment/GetSpeEquipmentType:
+    post:
+      summary: POST /api/Equipment/GetSpeEquipmentType
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        SpeEquipmentName:
+                          type: string
+                        TypeId:
+                          type: integer
+                      required:
+                      - SpeEquipmentName
+                      - TypeId
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/EquipmentRepair/GetTroubleList:
+    post:
+      summary: POST /api/EquipmentRepair/GetTroubleList
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                    enum:
+                    - 操作成功
+                  Status:
+                    type: boolean
+                    enum:
+                    - true
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            CanReview:
+                              type: boolean
+                            EQRP0116:
+                              type:
+                              - 'null'
+                              - string
+                            EQRP0101:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF0101:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type:
+                              - 'null'
+                              - string
+                            ReviseTime:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQEQ0101:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF0102:
+                              type: string
+                            EQOF01_EQPS0501:
+                              type: integer
+                            EQOF01_EQPS0502:
+                              type: string
+                            EQOF01_EQPS0506:
+                              type: string
+                            EQOF0103:
+                              type: string
+                            EQOF0104:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0105:
+                              type: 'null'
+                            EQOF0106:
+                              type: integer
+                            EQOF0107:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS1301:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF01_EQPS1302:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS1307:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS2601:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF0108:
+                              type: string
+                            EQOF0109:
+                              type: string
+                            EQOF0110:
+                              type: string
+                            EQOF0111:
+                              type: 'null'
+                            EQOF0112:
+                              type: string
+                            EQOF0113:
+                              type: 'null'
+                            EQOF0114:
+                              type: 'null'
+                            EQOF0115:
+                              type: 'null'
+                            EQOF0116:
+                              type:
+                              - boolean
+                              - 'null'
+                            EQOF0117:
+                              type: string
+                            EQOF0118:
+                              type: 'null'
+                            EQOF01_EQRP0116:
+                              type: 'null'
+                            EQOF0119:
+                              type: 'null'
+                            EQOF0120:
+                              type: 'null'
+                            EQOF0121:
+                              type: 'null'
+                            EQOF0122:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0123:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0124:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0125:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS0701:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF01_EQPS0702:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS0706:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0126:
+                              type: 'null'
+                            EQOF0127:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0128:
+                              type: 'null'
+                            EQOF0129:
+                              type: 'null'
+                            EQOF0131:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF0132:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0130:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF0133:
+                              type: 'null'
+                            EQOF0134:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0135:
+                              type: string
+                            EQOF0136:
+                              type: 'null'
+                            EQOF0137:
+                              type: 'null'
+                            EQOF0138:
+                              type: integer
+                            EQOF0139:
+                              type: integer
+                            EQOF0150:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0151:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0152:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0153:
+                              type: 'null'
+                            EQOF0154:
+                              type: 'null'
+                            EQOF0155:
+                              type:
+                              - boolean
+                              - 'null'
+                            EQOF01Audio:
+                              type: 'null'
+                            EQOF01DocType:
+                              type: integer
+                            EQOF0156:
+                              type: 'null'
+                            EQOF0157:
+                              type: 'null'
+                            EQOF0158:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF01_EQPS3301:
+                              type:
+                              - integer
+                              - 'null'
+                            EQOF01_EQPS3302:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQPS3306:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF0159:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_EQOUT0101:
+                              type: 'null'
+                            EQOF01_EQOUT0103:
+                              type: 'null'
+                            EQOF0160:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01101:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01102:
+                              type:
+                              - 'null'
+                              - string
+                            EQOF01_CoolAppConversationId:
+                              type: 'null'
+                          required:
+                          - CanReview
+                          - CreateTime
+                          - Creator
+                          - EQOF0101
+                          - EQOF0102
+                          - EQOF0103
+                          - EQOF0104
+                          - EQOF0105
+                          - EQOF0106
+                          - EQOF0107
+                          - EQOF0108
+                          - EQOF0109
+                          - EQOF0110
+                          - EQOF01101
+                          - EQOF01102
+                          - EQOF0111
+                          - EQOF0112
+                          - EQOF0113
+                          - EQOF0114
+                          - EQOF0115
+                          - EQOF0116
+                          - EQOF0117
+                          - EQOF0118
+                          - EQOF0119
+                          - EQOF0120
+                          - EQOF0121
+                          - EQOF0122
+                          - EQOF0123
+                          - EQOF0124
+                          - EQOF0125
+                          - EQOF0126
+                          - EQOF0127
+                          - EQOF0128
+                          - EQOF0129
+                          - EQOF0130
+                          - EQOF0131
+                          - EQOF0132
+                          - EQOF0133
+                          - EQOF0134
+                          - EQOF0135
+                          - EQOF0136
+                          - EQOF0137
+                          - EQOF0138
+                          - EQOF0139
+                          - EQOF0150
+                          - EQOF0151
+                          - EQOF0152
+                          - EQOF0153
+                          - EQOF0154
+                          - EQOF0155
+                          - EQOF0156
+                          - EQOF0157
+                          - EQOF0158
+                          - EQOF0159
+                          - EQOF0160
+                          - EQOF01Audio
+                          - EQOF01DocType
+                          - EQOF01_CoolAppConversationId
+                          - EQOF01_EQEQ0101
+                          - EQOF01_EQOUT0101
+                          - EQOF01_EQOUT0103
+                          - EQOF01_EQPS0501
+                          - EQOF01_EQPS0502
+                          - EQOF01_EQPS0506
+                          - EQOF01_EQPS0701
+                          - EQOF01_EQPS0702
+                          - EQOF01_EQPS0706
+                          - EQOF01_EQPS1301
+                          - EQOF01_EQPS1302
+                          - EQOF01_EQPS1307
+                          - EQOF01_EQPS2601
+                          - EQOF01_EQPS3301
+                          - EQOF01_EQPS3302
+                          - EQOF01_EQPS3306
+                          - EQOF01_EQRP0116
+                          - EQRP0101
+                          - EQRP0116
+                          - ReviseTime
+                          - Revisor
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                  enum:
+                  - 1
+                rows:
+                  type: integer
+                  enum:
+                  - 20
+                EQOF0158:
+                  type: integer
+                  enum:
+                  - 0
+                  - 1
+                  - 2
+                EQOF0107:
+                  type: integer
+                  enum:
+                  - 0
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 6
+                  - 7
+                  - 11
+                  - 12
+                  - 21
+                Correlation:
+                  type: integer
+                  enum:
+                  - 0
+                  - 1
+                  - 2
+                DOCState:
+                  type: integer
+                  enum:
+                  - 0
+                AwaitDoing:
+                  type: integer
+                  enum:
+                  - 0
+              required:
+              - AwaitDoing
+              - Correlation
+              - DOCState
+              - EQOF0107
+              - EQOF0158
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 15
+  /api/FieldSet/GetCriticalDeviceFields:
+    post:
+      summary: POST /api/FieldSet/GetCriticalDeviceFields
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      basicInfo:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            FIELD0101:
+                              type: integer
+                            FIELD0102:
+                              type: integer
+                            FIELD0103:
+                              type: string
+                            FIELD0104:
+                              type: string
+                            FIELD0105:
+                              type: 'null'
+                            FIELD0106:
+                              type: integer
+                            FIELD0107:
+                              type: integer
+                            FIELD0108:
+                              type: integer
+                            FIELD0109:
+                              type: integer
+                            FIELD0110:
+                              type: integer
+                            FIELD0111:
+                              type: integer
+                            FIELD0112:
+                              type: integer
+                            FIELD0113:
+                              type: integer
+                            FIELD0114:
+                              type: integer
+                            TypeId:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type: string
+                            ReviseTime:
+                              type: string
+                          required:
+                          - CreateTime
+                          - Creator
+                          - FIELD0101
+                          - FIELD0102
+                          - FIELD0103
+                          - FIELD0104
+                          - FIELD0105
+                          - FIELD0106
+                          - FIELD0107
+                          - FIELD0108
+                          - FIELD0109
+                          - FIELD0110
+                          - FIELD0111
+                          - FIELD0112
+                          - FIELD0113
+                          - FIELD0114
+                          - ReviseTime
+                          - Revisor
+                          - TypeId
+                      extendInfo:
+                        type: array
+                    required:
+                    - basicInfo
+                    - extendInfo
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                id:
+                  type: integer
+              required:
+              - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/FieldSet/GetFields:
+    post:
+      summary: POST /api/FieldSet/GetFields
+      responses:
+        '200':
+          description: HTTP 200
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                businessType:
+                  type: integer
+              required:
+              - businessType
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/Home/GetAwaitDoing:
+    post:
+      summary: POST /api/Home/GetAwaitDoing
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        type:
+                          type: string
+                        num:
+                          type: integer
+                        ids:
+                          type: array
+                          items:
+                            type: integer
+                      required:
+                      - ids
+                      - name
+                      - num
+                      - type
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetConfiguration:
+    post:
+      summary: POST /api/Home/GetConfiguration
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      ConfigurationList:
+                        type: array
+                    required:
+                    - ConfigurationList
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetDeviceNum:
+    post:
+      summary: POST /api/Home/GetDeviceNum
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: integer
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetHomeCarouselUrl:
+    post:
+      summary: POST /api/Home/GetHomeCarouselUrl
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ImageUrl:
+                          type: string
+                        TargetUrl:
+                          type: string
+                      required:
+                      - ImageUrl
+                      - TargetUrl
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetIntactDevicePercentage:
+    post:
+      summary: POST /api/Home/GetIntactDevicePercentage
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: number
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetInventoryWarning:
+    post:
+      summary: POST /api/Home/GetInventoryWarning
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      UpperNum:
+                        type: integer
+                      LowerNum:
+                        type: integer
+                    required:
+                    - LowerNum
+                    - UpperNum
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetMonthMaintainStatistics:
+    post:
+      summary: POST /api/Home/GetMonthMaintainStatistics
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Day:
+                          type: integer
+                        LastData:
+                          type: integer
+                        ThisData:
+                          type: integer
+                      required:
+                      - Day
+                      - LastData
+                      - ThisData
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetMonthRepairStatistics:
+    post:
+      summary: POST /api/Home/GetMonthRepairStatistics
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Day:
+                          type: integer
+                        LastData:
+                          type: integer
+                        ThisData:
+                          type: integer
+                      required:
+                      - Day
+                      - LastData
+                      - ThisData
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetTroubleDeviceNum:
+    post:
+      summary: POST /api/Home/GetTroubleDeviceNum
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: integer
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Home/GetUsingStatus:
+    post:
+      summary: POST /api/Home/GetUsingStatus
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type:
+                          - 'null'
+                          - string
+                        value:
+                          type: integer
+                      required:
+                      - name
+                      - value
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Log/ListLog:
+    post:
+      summary: POST /api/Log/ListLog
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            Id:
+                              type: integer
+                            Date:
+                              type: string
+                            Thread:
+                              type: string
+                            Level:
+                              type: string
+                            Message:
+                              type: string
+                            User:
+                              type: string
+                            Business:
+                              type: string
+                            Exception:
+                              type:
+                              - 'null'
+                              - string
+                            Ip:
+                              type: string
+                            Mac:
+                              type:
+                              - 'null'
+                              - string
+                          required:
+                          - Business
+                          - Date
+                          - Exception
+                          - Id
+                          - Ip
+                          - Level
+                          - Mac
+                          - Message
+                          - Thread
+                          - User
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+              required:
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/ParameterSetting/GetCompanyInfo:
+    post:
+      summary: POST /api/ParameterSetting/GetCompanyInfo
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                    enum:
+                    - 操作成功
+                  Status:
+                    type: boolean
+                    enum:
+                    - true
+                  Data:
+                    type: object
+                    properties:
+                      CompanyName:
+                        type: string
+                      RegisterTime:
+                        type: string
+                      Final:
+                        type: string
+                      Register:
+                        type: string
+                      Mobile:
+                        type: string
+                      UserNum:
+                        type: string
+                      WechatNum:
+                        type: integer
+                      MaxTroubleNum:
+                        type: integer
+                      DateRang:
+                        type: string
+                      Open:
+                        type: integer
+                      version:
+                        type: string
+                      versionImg:
+                        type: string
+                      versionColor:
+                        type: string
+                      SMSNum:
+                        type: string
+                      enableNum:
+                        type: integer
+                      disableNum:
+                        type: integer
+                      NowTroubleNum:
+                        type: integer
+                      AppIcon:
+                        type: string
+                      Icon:
+                        type: string
+                    required:
+                    - AppIcon
+                    - CompanyName
+                    - DateRang
+                    - Final
+                    - Icon
+                    - MaxTroubleNum
+                    - Mobile
+                    - NowTroubleNum
+                    - Open
+                    - Register
+                    - RegisterTime
+                    - SMSNum
+                    - UserNum
+                    - WechatNum
+                    - disableNum
+                    - enableNum
+                    - version
+                    - versionColor
+                    - versionImg
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 3
+  /api/PartRequisition/GetReviewAuthority:
+    post:
+      summary: POST /api/PartRequisition/GetReviewAuthority
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      receiveConfirmOutOfStorage:
+                        type: integer
+                      canReview:
+                        type: integer
+                    required:
+                    - canReview
+                    - receiveConfirmOutOfStorage
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/PartRequisition/ListPartRequisition:
+    post:
+      summary: POST /api/PartRequisition/ListPartRequisition
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                page:
+                  type: integer
+                rows:
+                  type: integer
+                AwaitDoing:
+                  type: integer
+                EQSP14_EQPS1701:
+                  type: integer
+              required:
+              - AwaitDoing
+              - EQSP14_EQPS1701
+              - page
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/PartType/GetPartTypeNoLevel:
+    post:
+      summary: POST /api/PartType/GetPartTypeNoLevel
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: 'null'
+                        name:
+                          type: string
+                        index:
+                          type: 'null'
+                        HaveChild:
+                          type: integer
+                        parentId:
+                          type: integer
+                      required:
+                      - HaveChild
+                      - code
+                      - id
+                      - index
+                      - name
+                      - parentId
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                id:
+                  type: integer
+              required:
+              - id
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/PartType/GetPartTypeTree:
+    post:
+      summary: POST /api/PartType/GetPartTypeTree
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        code:
+                          type: 'null'
+                        name:
+                          type: string
+                        index:
+                          type: string
+                        sequence:
+                          type: integer
+                        parentId:
+                          type: integer
+                        fullName:
+                          type: string
+                        childList:
+                          type: 'null'
+                      required:
+                      - childList
+                      - code
+                      - fullName
+                      - id
+                      - index
+                      - name
+                      - parentId
+                      - sequence
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/Role/GetCurUserPermission:
+    post:
+      summary: POST /api/Role/GetCurUserPermission
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Id:
+                          type: integer
+                        PermissionValue:
+                          type: string
+                        PermissionName:
+                          type: 'null'
+                        ControlPage:
+                          type: 'null'
+                        ControlBtn:
+                          type:
+                          - 'null'
+                          - string
+                        ControlAction:
+                          type:
+                          - 'null'
+                          - string
+                        Description:
+                          type: string
+                        Part:
+                          type: string
+                        HaveAuthority:
+                          type: boolean
+                      required:
+                      - ControlAction
+                      - ControlBtn
+                      - ControlPage
+                      - Description
+                      - HaveAuthority
+                      - Id
+                      - Part
+                      - PermissionName
+                      - PermissionValue
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/SystemGuide/GetPartGuideStatistics:
+    post:
+      summary: POST /api/SystemGuide/GetPartGuideStatistics
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      partPurchase:
+                        type: object
+                        properties:
+                          groupName:
+                            type: string
+                          personNum:
+                            type: integer
+                        required:
+                        - groupName
+                        - personNum
+                      partTransfer:
+                        type: object
+                        properties:
+                          groupName:
+                            type: string
+                          personNum:
+                            type: integer
+                        required:
+                        - groupName
+                        - personNum
+                      receiveConfirmOutOfStorage:
+                        type: string
+                      receiveConfirmOutOfStoragePersonNum:
+                        type: integer
+                    required:
+                    - partPurchase
+                    - partTransfer
+                    - receiveConfirmOutOfStorage
+                    - receiveConfirmOutOfStoragePersonNum
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/SystemGuide/GetPartReceiveSetting:
+    post:
+      summary: POST /api/SystemGuide/GetPartReceiveSetting
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      receiveConfirmOutOfStorage:
+                        type: string
+                    required:
+                    - receiveConfirmOutOfStorage
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/SystemGuide/GetPersonList:
+    post:
+      summary: POST /api/SystemGuide/GetPersonList
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            EQPS0101:
+                              type: integer
+                            EQPS0102:
+                              type: string
+                            EQPS01_EQPS0201:
+                              type: string
+                            EQPS01_EQPS0501:
+                              type: string
+                            EQPS0106:
+                              type: string
+                            EQPS0107:
+                              type: integer
+                            EQPS0108:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0109:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0110:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0111:
+                              type: string
+                            EQPS0112:
+                              type: string
+                            EQPS0113:
+                              type: 'null'
+                            EQPS01_EQPS1701:
+                              type: string
+                            EQPS01_EQPS0701:
+                              type: string
+                            EQPS0116:
+                              type: integer
+                            EQPS0118:
+                              type: string
+                            EQPS0119:
+                              type: boolean
+                            EQPS0121:
+                              type: 'null'
+                            EQPS0123:
+                              type: 'null'
+                            EQPS0124:
+                              type: string
+                            EQPS0126:
+                              type: 'null'
+                            EQPS0127:
+                              type: 'null'
+                            EQPS0128:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0130:
+                              type: integer
+                            EQPS0131:
+                              type: string
+                            EQPS0132:
+                              type: 'null'
+                            EQPS0133:
+                              type: 'null'
+                            EQPS0134:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0135:
+                              type: 'null'
+                            EQPS0136:
+                              type: integer
+                            EQPS0137:
+                              type: 'null'
+                            EQPS0138:
+                              type: 'null'
+                            EQPS0139:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0140:
+                              type: integer
+                            SectionId:
+                              type:
+                              - integer
+                              - 'null'
+                          required:
+                          - EQPS0101
+                          - EQPS0102
+                          - EQPS0106
+                          - EQPS0107
+                          - EQPS0108
+                          - EQPS0109
+                          - EQPS0110
+                          - EQPS0111
+                          - EQPS0112
+                          - EQPS0113
+                          - EQPS0116
+                          - EQPS0118
+                          - EQPS0119
+                          - EQPS0121
+                          - EQPS0123
+                          - EQPS0124
+                          - EQPS0126
+                          - EQPS0127
+                          - EQPS0128
+                          - EQPS0130
+                          - EQPS0131
+                          - EQPS0132
+                          - EQPS0133
+                          - EQPS0134
+                          - EQPS0135
+                          - EQPS0136
+                          - EQPS0137
+                          - EQPS0138
+                          - EQPS0139
+                          - EQPS0140
+                          - EQPS01_EQPS0201
+                          - EQPS01_EQPS0501
+                          - EQPS01_EQPS0701
+                          - EQPS01_EQPS1701
+                          - SectionId
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                roleId:
+                  type: integer
+                defaultType:
+                  type: string
+                page:
+                  type: integer
+                rows:
+                  type: integer
+              required:
+              - defaultType
+              - page
+              - roleId
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/SystemGuide/getRoles:
+    post:
+      summary: POST /api/SystemGuide/getRoles
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        personNum:
+                          type: integer
+                        RoleAuthority:
+                          type: 'null'
+                        EQPS0201:
+                          type: integer
+                        Creator:
+                          type:
+                          - 'null'
+                          - string
+                        CreateTime:
+                          type:
+                          - 'null'
+                          - string
+                        Revisor:
+                          type:
+                          - 'null'
+                          - string
+                        ReviseTime:
+                          type:
+                          - 'null'
+                          - string
+                        EQPS0202:
+                          type: string
+                        EQPS0203:
+                          type:
+                          - 'null'
+                          - string
+                        EQPS0204:
+                          type:
+                          - integer
+                          - 'null'
+                      required:
+                      - CreateTime
+                      - Creator
+                      - EQPS0201
+                      - EQPS0202
+                      - EQPS0203
+                      - EQPS0204
+                      - ReviseTime
+                      - Revisor
+                      - RoleAuthority
+                      - personNum
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                unless:
+                  type: integer
+                page:
+                  type: integer
+                rows:
+                  type: integer
+              required:
+              - page
+              - rows
+              - unless
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/SystemGuide/getRolesByPer:
+    post:
+      summary: POST /api/SystemGuide/getRolesByPer
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        personNum:
+                          type: integer
+                        RoleAuthority:
+                          type: string
+                        EQPS0201:
+                          type: integer
+                        Creator:
+                          type:
+                          - 'null'
+                          - string
+                        CreateTime:
+                          type:
+                          - 'null'
+                          - string
+                        Revisor:
+                          type:
+                          - 'null'
+                          - string
+                        ReviseTime:
+                          type:
+                          - 'null'
+                          - string
+                        EQPS0202:
+                          type: string
+                        EQPS0203:
+                          type:
+                          - 'null'
+                          - string
+                        EQPS0204:
+                          type:
+                          - integer
+                          - 'null'
+                      required:
+                      - CreateTime
+                      - Creator
+                      - EQPS0201
+                      - EQPS0202
+                      - EQPS0203
+                      - EQPS0204
+                      - ReviseTime
+                      - Revisor
+                      - RoleAuthority
+                      - personNum
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+              required:
+              - type
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/TableColumn/GetTableColumn:
+    post:
+      summary: POST /api/TableColumn/GetTableColumn
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                    enum:
+                    - 操作成功
+                  Status:
+                    type: boolean
+                    enum:
+                    - true
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        BusinessType:
+                          type: integer
+                        FieldName:
+                          type: string
+                        FieldDesc:
+                          type: string
+                        Sequence:
+                          type: integer
+                        Width:
+                          type: integer
+                        FieldType:
+                          type: integer
+                        CanSort:
+                          type: integer
+                      required:
+                      - BusinessType
+                      - CanSort
+                      - FieldDesc
+                      - FieldName
+                      - FieldType
+                      - Sequence
+                      - Width
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                businessType:
+                  type: integer
+                  enum:
+                  - 1
+                  - 2
+                  - 105
+                  - 106
+                  - 107
+                  - 201
+                  - 206
+                  - 301
+                TypeId:
+                  type: integer
+              required:
+              - businessType
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 12
+  /api/Token/NewLogin:
+    post:
+      summary: POST /api/Token/NewLogin
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      Token:
+                        type: string
+                      StrongPwd:
+                        type: integer
+                      Successed:
+                        type: integer
+                      NickName:
+                        type: string
+                      TenantName:
+                        type: string
+                      Version:
+                        type: integer
+                      UserId:
+                        type: integer
+                      AccountNo:
+                        type: 'null'
+                      CUSTOMER0101:
+                        type: integer
+                      IsAnonymous:
+                        type: integer
+                      CorpId:
+                        type: 'null'
+                      ManagementDep:
+                        type: string
+                      ManagementType:
+                        type: string
+                      tryoutType:
+                        type: 'null'
+                      AliasName:
+                        type: 'null'
+                      Rights:
+                        type: array
+                        items:
+                          type: string
+                      tel:
+                        type: string
+                      GroupId:
+                        type: array
+                        items:
+                          type: integer
+                      FirstLogin:
+                        type: integer
+                    required:
+                    - AccountNo
+                    - AliasName
+                    - CUSTOMER0101
+                    - CorpId
+                    - FirstLogin
+                    - GroupId
+                    - IsAnonymous
+                    - ManagementDep
+                    - ManagementType
+                    - NickName
+                    - Rights
+                    - StrongPwd
+                    - Successed
+                    - TenantName
+                    - Token
+                    - UserId
+                    - Version
+                    - tel
+                    - tryoutType
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                CompanyName:
+                  type: string
+                UP:
+                  type: string
+              required:
+              - CompanyName
+              - UP
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /api/User/GetUserList:
+    post:
+      summary: POST /api/User/GetUserList
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  Msg:
+                    type: string
+                  Status:
+                    type: boolean
+                  Data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      rows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            EQPS0201Str:
+                              type: string
+                            SectionName:
+                              type: string
+                            EQPS0501Str:
+                              type: 'null'
+                            EQPS0701Str:
+                              type: 'null'
+                            EQPS1701Str:
+                              type: 'null'
+                            EQPS0124Str:
+                              type: 'null'
+                            EQPS0107Str:
+                              type: 'null'
+                            EQPS0119Str:
+                              type: 'null'
+                            EQPS0101:
+                              type: integer
+                            Creator:
+                              type: string
+                            CreateTime:
+                              type: string
+                            Revisor:
+                              type: string
+                            ReviseTime:
+                              type: string
+                            EQPS0102:
+                              type: string
+                            EQPS0103:
+                              type: string
+                            EQPS01_EQPS0201:
+                              type: string
+                            EQPS01_EQPS0501:
+                              type: string
+                            EQPS0106:
+                              type: string
+                            EQPS0107:
+                              type: integer
+                            EQPS0108:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0109:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0110:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0111:
+                              type: string
+                            EQPS0112:
+                              type: string
+                            EQPS0113:
+                              type: 'null'
+                            EQPS01_EQPS1701:
+                              type: string
+                            EQPS01_EQPS0701:
+                              type: string
+                            EQPS0116:
+                              type: integer
+                            EQPS0118:
+                              type: string
+                            EQPS0119:
+                              type: boolean
+                            EQPS0121:
+                              type: 'null'
+                            EQPS0122:
+                              type: boolean
+                            EQPS0123:
+                              type: 'null'
+                            EQPS0124:
+                              type: string
+                            EQPS0125:
+                              type: string
+                            EQPS0126:
+                              type: 'null'
+                            EQPS0127:
+                              type: 'null'
+                            EQPS0128:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0129:
+                              type: 'null'
+                            EQPS0130:
+                              type: integer
+                            EQPS0131:
+                              type: string
+                            EQPS0132:
+                              type: 'null'
+                            EQPS0133:
+                              type: 'null'
+                            EQPS0134:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0135:
+                              type: 'null'
+                            EQPS0136:
+                              type: integer
+                            EQPS0137:
+                              type: 'null'
+                            EQPS0138:
+                              type: 'null'
+                            EQPS0139:
+                              type:
+                              - 'null'
+                              - string
+                            EQPS0140:
+                              type: integer
+                            SectionId:
+                              type:
+                              - integer
+                              - 'null'
+                          required:
+                          - CreateTime
+                          - Creator
+                          - EQPS0101
+                          - EQPS0102
+                          - EQPS0103
+                          - EQPS0106
+                          - EQPS0107
+                          - EQPS0107Str
+                          - EQPS0108
+                          - EQPS0109
+                          - EQPS0110
+                          - EQPS0111
+                          - EQPS0112
+                          - EQPS0113
+                          - EQPS0116
+                          - EQPS0118
+                          - EQPS0119
+                          - EQPS0119Str
+                          - EQPS0121
+                          - EQPS0122
+                          - EQPS0123
+                          - EQPS0124
+                          - EQPS0124Str
+                          - EQPS0125
+                          - EQPS0126
+                          - EQPS0127
+                          - EQPS0128
+                          - EQPS0129
+                          - EQPS0130
+                          - EQPS0131
+                          - EQPS0132
+                          - EQPS0133
+                          - EQPS0134
+                          - EQPS0135
+                          - EQPS0136
+                          - EQPS0137
+                          - EQPS0138
+                          - EQPS0139
+                          - EQPS0140
+                          - EQPS01_EQPS0201
+                          - EQPS01_EQPS0501
+                          - EQPS01_EQPS0701
+                          - EQPS01_EQPS1701
+                          - EQPS0201Str
+                          - EQPS0501Str
+                          - EQPS0701Str
+                          - EQPS1701Str
+                          - ReviseTime
+                          - Revisor
+                          - SectionId
+                          - SectionName
+                    required:
+                    - rows
+                    - total
+                  Extra:
+                    type: 'null'
+                required:
+                - Data
+                - Extra
+                - Msg
+                - Status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+              properties:
+                EQPS0119:
+                  type: integer
+                quickSearch:
+                  type: string
+                SectionId:
+                  type: string
+                page:
+                  type: integer
+                rows:
+                  type: integer
+              required:
+              - EQPS0119
+              - SectionId
+              - page
+              - quickSearch
+              - rows
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/WorkSection/GetWorkSectionsByDropdown:
+    post:
+      summary: POST /api/WorkSection/GetWorkSectionsByDropdown
+      responses:
+        '200':
+          description: HTTP 200
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/schema#
+              type: object
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 1
+  /version.json:
+    get:
+      summary: GET /version.json
+      responses:
+        '200':
+          description: HTTP 200
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/schema#
+                type: object
+                properties:
+                  version:
+                    type: string
+                  buildTime:
+                    type: string
+                  buildTimestamp:
+                    type: integer
+                  buildDate:
+                    type: string
+                    format: date
+                required:
+                - buildDate
+                - buildTime
+                - buildTimestamp
+                - version
+      parameters:
+      - name: t
+        in: query
+        required: true
+        schema:
+          type: integer
+      x-apiscout-review: confirmed
+      x-apiscout-observations: 2
+  /api/Token/RefreshToken:
+    unknown:
+      summary: UNKNOWN /api/Token/RefreshToken
+      responses:
+        '200':
+          description: OK
+      x-apiscout-review: uncertain
+      x-apiscout-observations: 0
+servers:
+- url: https://www2.gtshebei.com

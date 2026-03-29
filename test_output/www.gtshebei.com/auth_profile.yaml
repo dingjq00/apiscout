@@ -1,0 +1,37 @@
+auth:
+  type: bearer_jwt
+  token_analysis:
+    algorithm: HS256
+    claims:
+    - AccountNo
+    - ChoiseScope
+    - CorpId
+    - CustomerScope
+    - DepId
+    - IsAnonymous
+    - ManageStorageId
+    - ManagementDep
+    - ManagementDoc
+    - ManagementPart
+    - ManagementType
+    - NickName
+    - Phone
+    - ReapirGroup
+    - RoleId
+    - TenantData
+    - TenantId
+    - TenantName
+    - UserId
+    - UserName
+    - Version
+    - aud
+    - exp
+    - iat
+    - iss
+    - nbf
+    has_expiration: true
+insight68_config_hint:
+  auth_adapter: jwt_bearer
+  required_from_customer:
+  - 服务账号用户名
+  - 密码
