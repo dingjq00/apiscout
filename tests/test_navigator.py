@@ -1,6 +1,4 @@
 """Navigator 页面探索编排测试 — 测试编排逻辑，不启动浏览器"""
-import pytest
-
 from apiscout.core.crawler.navigator import (
     NavigatorConfig,
     PageQueue,
