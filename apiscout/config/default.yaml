@@ -1,0 +1,36 @@
+crawl:
+  max_depth: 5
+  max_pages: 200
+  page_timeout: 30          # 秒
+  network_idle_wait: 3       # 秒
+  request_delay: 0.5         # 秒，每次导航间隔
+  concurrent_pages: 1
+  domain_scope: same-origin
+  exclude_patterns:
+    - "/logout"
+    - "/static/*"
+    - "/assets/*"
+    - "/favicon.ico"
+  exploration_level: standard  # quick / standard / thorough
+
+capture:
+  max_body_size: 524288      # 512KB
+  resource_types:
+    - fetch
+    - xhr
+    - document
+  skip_extensions:
+    - .css
+    - .js
+    - .png
+    - .jpg
+    - .gif
+    - .svg
+    - .woff
+    - .woff2
+    - .ttf
+    - .ico
+
+output:
+  dir: "./output"
+  screenshots: false
