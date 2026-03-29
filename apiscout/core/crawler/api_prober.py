@@ -123,11 +123,17 @@ async def probe_api_endpoints(
             # 对 OpenAPI/Swagger spec 端点，用 Playwright request API 下载完整内容
             # page.evaluate 有 DevTools protocol 大小限制，大 spec 传不回来
             if is_spec_endpoint and status == 200 and is_json and output_dir:
+                logger.info("尝试下载完整 spec: %s", url)
                 try:
                     # 用 page.request（携带浏览器 cookie）直接下载
                     api_resp = await page.request.get(url)
+                    logger.info("  page.request 状态: %d, content-type: %s",
+                               api_resp.status, api_resp.headers.get("content-type", ""))
                     if api_resp.ok:
                         full_body = await api_resp.json()
+                        logger.info("  JSON 解析成功, 类型: %s, keys: %s",
+                                   type(full_body).__name__,
+                                   list(full_body.keys())[:5] if isinstance(full_body, dict) else "非dict")
                         if isinstance(full_body, dict) and ("openapi" in full_body or "swagger" in full_body):
                             from pathlib import Path
                             import yaml
@@ -137,8 +143,12 @@ async def probe_api_endpoints(
                                          allow_unicode=True, sort_keys=False)
                             body = full_body
                             logger.info("已保存完整 OpenAPI spec: %s", spec_file)
+                        else:
+                            logger.warning("  响应不是 OpenAPI spec (缺少 openapi/swagger key)")
+                    else:
+                        logger.warning("  page.request 返回非 200: %d", api_resp.status)
                 except Exception as e:
-                    logger.warning("OpenAPI spec 下载失败: %s", e)
+                    logger.warning("OpenAPI spec 下载失败: %s: %s", type(e).__name__, e)
 
             result = ProbeResult(
                 path=endpoint["path"],
