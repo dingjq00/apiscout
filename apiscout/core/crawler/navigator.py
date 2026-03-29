@@ -124,7 +124,7 @@ class ExplorationProgress:
     current_url: str = ""
 
 
-async def _explore_spa_menus(page, recorder, config) -> list[str]:
+async def _explore_spa_menus(page, recorder, config, known_urls: set | None = None) -> list[str]:
     """SPA 菜单点击探索 — 不依赖特定 CSS 选择器，通用发现导航项
 
     策略：在页面顶部/侧边导航区域找到所有可见的短文本可点击元素，
@@ -139,7 +139,7 @@ async def _explore_spa_menus(page, recorder, config) -> list[str]:
         () => {
             // 找导航容器：header、nav、sidebar、或含 menu/nav/header 类名的元素
             const containers = document.querySelectorAll(
-                'header, nav, aside, [class*="menu"], [class*="nav"], [class*="sidebar"], [class*="header"]'
+                'header, nav, aside, [class*="menu"], [class*="nav"], [class*="sidebar"], [class*="side"], [class*="aside"], [class*="header"], [class*="tab"]'
             );
 
             const items = new Set();
@@ -224,7 +224,8 @@ async def _explore_spa_menus(page, recorder, config) -> list[str]:
         new_url = page.url
         after_count = recorder.captured_count
         new_requests = after_count - before_count
-        url_changed = new_url != original_url and new_url not in discovered_urls
+        all_known = discovered_urls | (known_urls or set())
+        url_changed = new_url != original_url and new_url not in all_known
 
         if url_changed:
             discovered_urls.add(new_url)
@@ -337,7 +338,9 @@ async def explore_pages(
         # 层 1.5：SPA 菜单点击探索（Vue/React 等 SPA 框架的菜单没有 href）
         if depth <= 1:  # 首页 + 一级页面都做菜单探索
             try:
-                menu_urls = await _explore_spa_menus(page, recorder, config)
+                # 传入已知 URL，避免重复点击已访问的路由（防死循环）
+                all_known_urls = queue._visited | queue._discovered
+                menu_urls = await _explore_spa_menus(page, recorder, config, known_urls=all_known_urls)
                 for menu_url in menu_urls:
                     queue.add(menu_url, depth=depth + 1)
                 if menu_urls:
