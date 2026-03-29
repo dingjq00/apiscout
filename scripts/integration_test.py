@@ -118,17 +118,13 @@ async def main():
         else:
             logger.info("未匹配到已知框架，将使用通用抓包策略")
 
-        # Phase 1b: 自动探索
+        # Phase 1b: 自动探索（使用默认配置）
+        from apiscout.core.config import load_config
+        cfg = load_config()
+        nav_config = NavigatorConfig.from_config(cfg)
         logger.info("")
-        logger.info(">>> 开始自动探索（最多 30 页，深度 3）...")
-
-        nav_config = NavigatorConfig(
-            max_depth=3,
-            max_pages=30,
-            page_timeout=15,
-            network_idle_wait=3,
-            request_delay=1.0,
-        )
+        logger.info(">>> 开始自动探索（最多 %d 页，深度 %d）...",
+                    nav_config.max_pages, nav_config.max_depth)
 
         def on_progress(progress):
             logger.info(
