@@ -233,7 +233,90 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
         if url_changed or new_requests > 0:
             logger.info("  点击: %s → %s (新增 %d 请求)", text, new_url[-50:], new_requests)
 
-    # 回到原始页面
+    # 第三步：点击页面上的安全按钮（查询/搜索/查看/导出等）
+    # 回到原始页面先，再点按钮
+    if page.url != original_url:
+        try:
+            await page.goto(original_url, timeout=config.page_timeout * 1000,
+                          wait_until="domcontentloaded")
+            await asyncio.sleep(config.network_idle_wait)
+        except Exception:
+            pass
+
+    try:
+        buttons = await page.evaluate("""
+            () => {
+                const results = [];
+                const seen = new Set();
+                // 找所有按钮和可点击元素
+                const candidates = document.querySelectorAll(
+                    'button, [role="button"], .el-button, .btn, [class*="button"], [class*="btn"]'
+                );
+                for (const el of candidates) {
+                    const text = el.textContent.trim();
+                    if (!text || text.length > 15 || text.length < 1) continue;
+                    if (seen.has(text)) continue;
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) continue;
+                    if (rect.top > 800) continue;
+                    seen.add(text);
+                    // 构建选择器
+                    let selector = '';
+                    if (el.id) { selector = '#' + el.id; }
+                    else {
+                        let path = [];
+                        let current = el;
+                        while (current && current !== document.body) {
+                            let idx = 1;
+                            let sib = current.previousElementSibling;
+                            while (sib) { idx++; sib = sib.previousElementSibling; }
+                            path.unshift(current.tagName.toLowerCase() + ':nth-child(' + idx + ')');
+                            current = current.parentElement;
+                        }
+                        selector = 'body > ' + path.join(' > ');
+                    }
+                    results.push({text, selector});
+                }
+                return results;
+            }
+        """)
+
+        if buttons:
+            safe_buttons = [b for b in buttons if classify_action(b["text"]) != "dangerous"]
+            if safe_buttons:
+                logger.info("发现 %d 个安全按钮，开始点击...", len(safe_buttons))
+                for btn in safe_buttons[:10]:  # 最多点 10 个按钮
+                    before_count = recorder.captured_count
+                    try:
+                        el = await page.query_selector(btn["selector"])
+                        if not el:
+                            continue
+                        await el.click(timeout=3000)
+                        await asyncio.sleep(2)
+
+                        after_count = recorder.captured_count
+                        new_requests = after_count - before_count
+                        if new_requests > 0:
+                            logger.info("  按钮: %s (新增 %d 请求)", btn["text"], new_requests)
+
+                        # 如果弹出了对话框，关掉它
+                        try:
+                            close_btn = await page.query_selector(
+                                '.el-dialog__close, .el-drawer__close-btn, '
+                                '.ant-modal-close, [class*="close"], [aria-label="Close"]'
+                            )
+                            if close_btn and await close_btn.is_visible():
+                                await close_btn.click(timeout=2000)
+                                await asyncio.sleep(0.5)
+                        except Exception:
+                            pass
+
+                    except Exception:
+                        continue
+    except Exception as e:
+        logger.debug("按钮探索跳过: %s", e)
+
+    # 回到原始页面（最终）
     if page.url != original_url:
         try:
             await page.goto(original_url, timeout=config.page_timeout * 1000,
