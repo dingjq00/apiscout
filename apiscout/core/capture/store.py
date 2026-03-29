@@ -1,9 +1,9 @@
 """JSONL 捕获数据存储 — 增量写盘，崩溃安全"""
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Iterator
-from urllib.parse import urlparse, urlencode, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 
 @dataclass

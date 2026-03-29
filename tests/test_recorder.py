@@ -1,6 +1,4 @@
 """Recorder 测试 — 使用 mock 验证逻辑，不启动真实浏览器"""
-import json
-from unittest.mock import MagicMock, AsyncMock
 from apiscout.core.capture.recorder import build_capture_record, PageRecorder
 from apiscout.core.capture.store import CaptureRecord, CaptureStore
 from apiscout.core.capture.filter import RequestFilter

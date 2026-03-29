@@ -1,6 +1,4 @@
 """JSONL 存储层测试"""
-import json
-from pathlib import Path
 from apiscout.core.capture.store import CaptureStore, CaptureRecord
 
 
