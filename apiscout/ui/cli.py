@@ -274,3 +274,17 @@ def enrich(project_dir, ai, api_key):
 
     click.echo(f"AI 增强: {project_dir} (提供商: {ai})")
     click.echo("  [待完善]")
+
+
+@main.command()
+@click.option("--port", "-p", default=9527, help="端口号")
+def web(port):
+    """启动 Web 面板（浏览器操作界面）
+
+    \b
+    示例：
+      apiscout web
+      apiscout web -p 8000
+    """
+    from apiscout.web.app import start_server
+    start_server(port=port)
