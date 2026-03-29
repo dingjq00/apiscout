@@ -125,113 +125,112 @@ class ExplorationProgress:
 
 
 async def _explore_spa_menus(page, recorder, config) -> list[str]:
-    """SPA 菜单点击探索 — 找到菜单项并逐个点击，收集触发的路由变化"""
+    """SPA 菜单点击探索 — 不依赖特定 CSS 选择器，通用发现导航项
+
+    策略：在页面顶部/侧边导航区域找到所有可见的短文本可点击元素，
+    逐个点击并观察 URL 变化和新请求产生。
+    """
     import asyncio
 
     logger.info("SPA 菜单探索开始 (当前 URL: %s)", page.url)
 
-    # 常见 SPA 框架的菜单选择器（覆盖 Element UI / Ant Design / 通用）
-    MENU_SELECTORS = [
-        # Element UI (Vue)
-        ".el-menu-item",
-        ".el-submenu__title",
-        # Ant Design (React/Vue)
-        ".ant-menu-item",
-        ".ant-menu-submenu-title",
-        # Naive UI
-        ".n-menu-item",
-        # 通用导航
-        "nav a, nav [role='menuitem']",
-        ".sidebar-menu li > a, .sidebar-menu li > span",
-        ".menu-item, .nav-item",
-        # 顶部导航栏
-        ".navbar a, .top-nav a, header nav a",
-    ]
+    # 用 JS 在页面里找到导航项 — 不依赖特定框架选择器
+    nav_items = await page.evaluate("""
+        () => {
+            // 找导航容器：header、nav、sidebar、或含 menu/nav/header 类名的元素
+            const containers = document.querySelectorAll(
+                'header, nav, aside, [class*="menu"], [class*="nav"], [class*="sidebar"], [class*="header"]'
+            );
+
+            const items = new Set();
+            const seen_texts = new Set();
+
+            for (const container of containers) {
+                // 找容器内所有可见的叶子元素（有文本、没有子块元素的）
+                const candidates = container.querySelectorAll('a, div, span, li, button');
+                for (const el of candidates) {
+                    const text = el.textContent.trim();
+                    // 过滤：有文本、文本短（菜单项通常 < 10 字）、不重复
+                    if (!text || text.length > 15 || text.length < 2) continue;
+                    if (seen_texts.has(text)) continue;
+                    // 必须可见
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) continue;
+                    // 排除：在页面很下方的不太可能是导航
+                    if (rect.top > 600) continue;
+                    // 尽量选叶子节点（没有块级子元素）
+                    const hasBlockChild = Array.from(el.children).some(
+                        c => ['DIV','UL','OL','TABLE'].includes(c.tagName)
+                    );
+                    if (hasBlockChild) continue;
+
+                    seen_texts.add(text);
+                    // 返回元素的唯一选择器路径
+                    let selector = '';
+                    if (el.id) {
+                        selector = '#' + el.id;
+                    } else {
+                        // 构建 nth-child 路径
+                        let path = [];
+                        let current = el;
+                        while (current && current !== document.body) {
+                            let idx = 1;
+                            let sib = current.previousElementSibling;
+                            while (sib) { idx++; sib = sib.previousElementSibling; }
+                            path.unshift(current.tagName.toLowerCase() + ':nth-child(' + idx + ')');
+                            current = current.parentElement;
+                        }
+                        selector = 'body > ' + path.join(' > ');
+                    }
+                    items.add(JSON.stringify({text, selector, top: rect.top}));
+                }
+            }
+            return Array.from(items).map(s => JSON.parse(s));
+        }
+    """)
+
+    if not nav_items:
+        logger.info("未找到导航项")
+        return []
+
+    logger.info("发现 %d 个可能的导航项", len(nav_items))
+    for item in nav_items[:10]:
+        logger.info("  [%.0fpx] %s", item["top"], item["text"])
 
     discovered_urls = set()
     original_url = page.url
 
-    # 第一步：展开所有子菜单（点击 submenu title）
-    SUBMENU_SELECTORS = [
-        ".el-submenu__title",
-        ".ant-menu-submenu-title",
-        ".n-submenu-children",
-    ]
-    for selector in SUBMENU_SELECTORS:
-        try:
-            submenus = await page.query_selector_all(selector)
-            for sub in submenus:
-                try:
-                    if await sub.is_visible():
-                        await sub.click(timeout=3000)
-                        await asyncio.sleep(0.5)
-                except Exception:
-                    pass
-        except Exception:
-            pass
+    for item in nav_items:
+        text = item["text"]
+        selector = item["selector"]
 
-    await asyncio.sleep(1)  # 等子菜单展开动画完成
-    logger.info("子菜单展开完毕，开始查找菜单项...")
+        # 安全检查
+        action = classify_action(text)
+        if action == "dangerous":
+            logger.debug("  跳过危险: %s", text)
+            continue
 
-    # 第二步：点击所有菜单项
-    for selector in MENU_SELECTORS:
+        before_count = recorder.captured_count
+
         try:
-            items = await page.query_selector_all(selector)
-            if not items:
-                logger.debug("  选择器 %s: 0 个", selector)
+            el = await page.query_selector(selector)
+            if not el:
                 continue
-
-            logger.info("发现 %d 个菜单项 (选择器: %s)", len(items), selector)
-
-            for item in items:
-                try:
-                    # 检查是否可见
-                    is_visible = await item.is_visible()
-                    if not is_visible:
-                        continue
-
-                    # 获取文本用于安全检查
-                    text = (await item.text_content() or "").strip()
-                    if not text:
-                        continue
-                    action = classify_action(text)
-                    if action == "dangerous":
-                        logger.debug("跳过危险操作: %s", text)
-                        continue
-
-                    # 记录点击前的请求数
-                    before_count = recorder.captured_count
-
-                    # 点击菜单项
-                    try:
-                        await item.click(timeout=5000)
-                        await asyncio.sleep(config.network_idle_wait)
-                    except Exception:
-                        continue
-
-                    # 检查结果：URL 变化 或 新请求产生
-                    new_url = page.url
-                    after_count = recorder.captured_count
-                    new_requests = after_count - before_count
-                    url_changed = new_url != original_url and new_url not in discovered_urls
-
-                    if url_changed:
-                        discovered_urls.add(new_url)
-
-                    if url_changed or new_requests > 0:
-                        logger.info("  菜单: %s → %s (新增 %d 请求)",
-                                   text[:20], new_url[-50:], new_requests)
-                    else:
-                        logger.debug("  菜单: %s — 无变化", text[:20])
-
-                except Exception:
-                    continue
-
-            if discovered_urls:
-                break  # 找到有效的选择器就不再尝试其他
-
+            await el.click(timeout=5000)
+            await asyncio.sleep(config.network_idle_wait)
         except Exception:
             continue
+
+        new_url = page.url
+        after_count = recorder.captured_count
+        new_requests = after_count - before_count
+        url_changed = new_url != original_url and new_url not in discovered_urls
+
+        if url_changed:
+            discovered_urls.add(new_url)
+
+        if url_changed or new_requests > 0:
+            logger.info("  点击: %s → %s (新增 %d 请求)", text, new_url[-50:], new_requests)
 
     # 回到原始页面
     if page.url != original_url:
