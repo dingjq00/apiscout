@@ -124,6 +124,98 @@ class ExplorationProgress:
     current_url: str = ""
 
 
+async def _explore_spa_menus(page, recorder, config) -> list[str]:
+    """SPA 菜单点击探索 — 找到菜单项并逐个点击，收集触发的路由变化
+
+    适用于 Vue/React 等 SPA 框架，菜单没有标准 <a href>，
+    只能通过点击来发现路由。
+    """
+    import asyncio
+
+    # 常见 SPA 框架的菜单选择器（覆盖 Element UI / Ant Design / 通用）
+    MENU_SELECTORS = [
+        # Element UI (Vue)
+        ".el-menu-item",
+        ".el-submenu__title",
+        # Ant Design (React/Vue)
+        ".ant-menu-item",
+        ".ant-menu-submenu-title",
+        # Naive UI
+        ".n-menu-item",
+        # 通用导航
+        "nav a, nav [role='menuitem']",
+        ".sidebar-menu li > a, .sidebar-menu li > span",
+        ".menu-item, .nav-item",
+        # 顶部导航栏
+        ".navbar a, .top-nav a, header nav a",
+    ]
+
+    discovered_urls = set()
+    original_url = page.url
+
+    for selector in MENU_SELECTORS:
+        try:
+            items = await page.query_selector_all(selector)
+            if not items:
+                continue
+
+            logger.info("发现 %d 个菜单项 (选择器: %s)", len(items), selector)
+
+            for item in items:
+                try:
+                    # 检查是否可见
+                    is_visible = await item.is_visible()
+                    if not is_visible:
+                        continue
+
+                    # 获取文本用于安全检查
+                    text = (await item.text_content() or "").strip()
+                    if not text:
+                        continue
+                    action = classify_action(text)
+                    if action == "dangerous":
+                        logger.debug("跳过危险操作: %s", text)
+                        continue
+
+                    # 记录点击前的请求数
+                    before_count = recorder.captured_count
+
+                    # 点击菜单项
+                    try:
+                        await item.click(timeout=5000)
+                        await asyncio.sleep(config.network_idle_wait)
+                    except Exception:
+                        continue
+
+                    # 检查 URL 是否变化
+                    new_url = page.url
+                    if new_url != original_url and new_url not in discovered_urls:
+                        discovered_urls.add(new_url)
+                        after_count = recorder.captured_count
+                        logger.info("  菜单: %s → %s (新增 %d 请求)",
+                                   text[:20], new_url[-50:], after_count - before_count)
+
+                except Exception:
+                    continue
+
+            if discovered_urls:
+                break  # 找到有效的选择器就不再尝试其他
+
+        except Exception:
+            continue
+
+    # 回到原始页面
+    if page.url != original_url:
+        try:
+            await page.goto(original_url, timeout=config.page_timeout * 1000,
+                          wait_until="domcontentloaded")
+            await asyncio.sleep(1)
+        except Exception:
+            pass
+
+    return list(discovered_urls)
+
+
 async def explore_pages(
     page,
     start_url: str,
@@ -213,6 +305,17 @@ async def explore_pages(
                 queue.add(link, depth=depth + 1)
         except Exception as e:
             logger.warning("链接提取失败: %s", e)
+
+        # 层 1.5：SPA 菜单点击探索（Vue/React 等 SPA 框架的菜单没有 href）
+        if depth == 0:  # 只在首页做菜单探索，避免重复
+            try:
+                menu_urls = await _explore_spa_menus(page, recorder, config)
+                for menu_url in menu_urls:
+                    queue.add(menu_url, depth=depth + 1)
+                if menu_urls:
+                    logger.info("SPA 菜单探索发现 %d 个路由", len(menu_urls))
+            except Exception as e:
+                logger.debug("SPA 菜单探索跳过: %s", e)
 
         # 层 2：JS 静态分析（同源脚本，最多处理 20 个）
         try:
