@@ -175,7 +175,9 @@ async def explore_pages(
 
         # 导航到页面
         try:
-            await page.goto(url, timeout=config.page_timeout * 1000, wait_until="networkidle")
+            await page.goto(url, timeout=config.page_timeout * 1000, wait_until="domcontentloaded")
+            # DOM 加载后等一段时间让 API 请求发出
+            await asyncio.sleep(config.network_idle_wait)
         except Exception as e:
             logger.warning("导航失败: %s → %s", url, e)
             continue
