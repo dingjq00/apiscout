@@ -17,7 +17,6 @@ class ScrollConfig:
 def should_continue_scrolling(
     scroll_count: int,
     max_scrolls: int,
-    new_requests_since_last: int,
     consecutive_idle: int,
     max_idle: int,
 ) -> bool:
@@ -44,7 +43,7 @@ async def scroll_page(page, config: ScrollConfig | None = None, request_counter=
     consecutive_idle = 0
     last_request_count = request_counter() if request_counter else 0
 
-    while should_continue_scrolling(scroll_count, config.max_scrolls, 0, consecutive_idle, config.max_idle):
+    while should_continue_scrolling(scroll_count, config.max_scrolls, consecutive_idle, config.max_idle):
         # 滚动到底部
         await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         await asyncio.sleep(config.scroll_delay)
