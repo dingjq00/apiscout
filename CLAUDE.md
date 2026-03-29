@@ -133,5 +133,12 @@ pyinstaller pack/pyinstaller.spec --onedir
 | 12 | PlayCard 经验 | 域名过滤、JSONL 格式、协议优先 | capture/ |
 | 13 | 深度审查 | 路径参数化覆盖数字ID/UUID/slug/hash/编码ID | router.py |
 | 14 | 市场调研 | 中国 ERP 非标认证（用友/金蝶自定义 Header） | auth_detector.py |
+| 15 | Optic (Atlassian 归档) | 迭代收敛循环：diff→patch→re-diff 直到稳定 | schema_engine.py |
+| 16 | Optic | Path inference 启发式：保留词排除+父段单数化 | router.py |
+| 17 | Optic | YAML roundtrip writer：AST 上 apply patch 保留格式 | openapi.py |
+| 18 | Akita (Postman 归档) | Decorator Chain 处理管线：Collector 包 Collector | recorder.py |
+| 19 | Akita | CategorizeString：int64→uint64→float64→bool→string | schema_engine.py |
+| 20 | Meeshkan (关闭) | fold/reduce 增量构建 + 边录边推断 | workflow.py |
+| 21 | Meeshkan | 失败教训：纯自动推断=demo质量，必须人工审核 | 两遍设计的理论支撑 |
 
 详细的代码审查发现见设计文档的"研究发现"章节。
