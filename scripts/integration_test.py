@@ -83,6 +83,34 @@ async def main():
         logger.info("当前 URL: %s", current_url)
         logger.info("登录过程已捕获 %d 个请求", recorder.captured_count)
 
+        # Phase 0: API 文档端点探测（登录后带 session 探测）
+        logger.info("")
+        logger.info(">>> 探测已知 API 文档端点...")
+        from apiscout.core.crawler.api_prober import probe_api_endpoints, summarize_probe_results
+        probe_results = await probe_api_endpoints(page, target_origin)
+        probe_summary = summarize_probe_results(probe_results)
+
+        if probe_summary["openapi_spec"]:
+            logger.info("发现现成 OpenAPI spec！直接使用，跳过抓包推断。")
+            # 直接保存 spec，不需要抓包
+            import yaml
+            spec_path = output_dir / "discovered_spec.yaml"
+            with open(spec_path, "w", encoding="utf-8") as f:
+                yaml.dump(probe_summary["openapi_spec"], f,
+                         default_flow_style=False, allow_unicode=True, sort_keys=False)
+            logger.info("已保存: %s", spec_path)
+        else:
+            if probe_summary["available_endpoints"]:
+                logger.info("发现 %d 个可用端点（无完整 spec）:", len(probe_summary["available_endpoints"]))
+                for ep in probe_summary["available_endpoints"]:
+                    logger.info("   %s — %s", ep["path"], ep["desc"])
+            if probe_summary["auth_required"]:
+                logger.info("发现 %d 个需要认证的端点:", len(probe_summary["auth_required"]))
+                for ep in probe_summary["auth_required"]:
+                    logger.info("   🔒 %s — %s", ep["path"], ep["desc"])
+            if probe_summary["framework_hints"]:
+                logger.info("检测到框架: %s", ", ".join(probe_summary["framework_hints"]))
+
         # Phase 1b: 自动探索
         logger.info("")
         logger.info(">>> 开始自动探索（最多 30 页，深度 3）...")
