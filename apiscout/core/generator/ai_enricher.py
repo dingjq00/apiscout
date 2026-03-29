@@ -113,7 +113,8 @@ def enrich_endpoints(
 
         try:
             response = _call_ai_api(prompt, api_key, provider)
-            ai_results = parse_enrichment_response(response.choices[0].message.content)
+            content = response.choices[0].message.content or ""
+            ai_results = parse_enrichment_response(content)
 
             # 按 (path, method) 合并 AI 结果到端点
             result_map = {(r["path"], r["method"]): r for r in ai_results}

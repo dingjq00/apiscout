@@ -69,7 +69,6 @@ def generate(draft_file, output):
 @click.option("--api-key", envvar="DEEPSEEK_API_KEY", help="API Key")
 def enrich(project_dir, ai, api_key):
     """AI 增强：端点命名、字段语义、MCP Tool 生成"""
-    import yaml
     from apiscout.core.generator.ai_enricher import enrich_endpoints, write_enriched_spec
     from pathlib import Path
 
