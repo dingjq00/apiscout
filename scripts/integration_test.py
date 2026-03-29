@@ -83,6 +83,13 @@ async def main():
         logger.info("当前 URL: %s", current_url)
         logger.info("登录过程已捕获 %d 个请求", recorder.captured_count)
 
+        # 登录后可能跳转到不同域名（如 www → www2），更新 filter 的 origin
+        actual_origin = f"{urlparse(current_url).scheme}://{urlparse(current_url).netloc}"
+        if actual_origin != target_origin:
+            logger.info("检测到域名跳转: %s → %s，更新捕获过滤器", target_origin, actual_origin)
+            recorder.filter.target_origin = actual_origin
+            target_origin = actual_origin
+
         # Phase 0: 框架检测 + 适配器策略
         logger.info("")
         logger.info(">>> 框架检测中...")
