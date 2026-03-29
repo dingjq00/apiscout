@@ -124,7 +124,7 @@ class ExplorationProgress:
     current_url: str = ""
 
 
-async def _explore_spa_menus(page, recorder, config, known_urls: set | None = None) -> list[str]:
+async def _explore_spa_menus(page, recorder, config, known_urls: set | None = None, clicked_texts: set | None = None) -> list[str]:
     """SPA 菜单点击探索 — 不依赖特定 CSS 选择器，通用发现导航项
 
     策略：在页面顶部/侧边导航区域找到所有可见的短文本可点击元素，
@@ -204,6 +204,10 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
         text = item["text"]
         selector = item["selector"]
 
+        # 跳过已点击过的文本（防止在不同页面重复点顶部导航）
+        if clicked_texts and text in clicked_texts:
+            continue
+
         # 安全检查
         action = classify_action(text)
         if action == "dangerous":
@@ -229,6 +233,10 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
 
         if url_changed:
             discovered_urls.add(new_url)
+
+        # 记录已点击文本（传给下次调用避免重复）
+        if clicked_texts is not None:
+            clicked_texts.add(text)
 
         if url_changed or new_requests > 0:
             logger.info("  点击: %s → %s (新增 %d 请求)", text, new_url[-50:], new_requests)
@@ -368,6 +376,7 @@ async def explore_pages(
 
     queue.add(start_url, depth=0)
     js_endpoints: list[str] = []
+    clicked_texts: set[str] = set()  # 跨页面记录已点击的文本，防重复
 
     while not queue.is_empty():
         url, depth = queue.pop()
@@ -423,7 +432,11 @@ async def explore_pages(
             try:
                 # 传入已知 URL，避免重复点击已访问的路由（防死循环）
                 all_known_urls = queue._visited | queue._discovered
-                menu_urls = await _explore_spa_menus(page, recorder, config, known_urls=all_known_urls)
+                menu_urls = await _explore_spa_menus(
+                    page, recorder, config,
+                    known_urls=all_known_urls,
+                    clicked_texts=clicked_texts,
+                )
                 for menu_url in menu_urls:
                     queue.add(menu_url, depth=depth + 1)
                 if menu_urls:
