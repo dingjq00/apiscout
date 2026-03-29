@@ -69,6 +69,30 @@ def test_exclude_patterns():
     assert "https://eam.example.com/static/logo.png" not in links
 
 
+def test_skip_link_tags_and_static_resources():
+    """不从 <link> 标签提取，不导航到静态资源"""
+    html = '''
+    <html>
+    <head>
+        <link rel="icon" href="/icons/icon-2732x2048.png?-990272340">
+        <link rel="stylesheet" href="/styles/main.css">
+        <link rel="manifest" href="/manifest.json">
+    </head>
+    <body>
+        <a href="/dashboard">仪表盘</a>
+        <a href="/report.pdf">下载报告</a>
+    </body></html>
+    '''
+    links = extract_links_from_html(html, base_url="https://eam.example.com")
+    # <link> 标签的 href 不应被提取
+    assert not any("icon" in l for l in links)
+    assert not any(".css" in l for l in links)
+    # <a> 标签的正常链接应该保留
+    assert "https://eam.example.com/dashboard" in links
+    # 但 .pdf 静态资源也应过滤
+    assert not any(".pdf" in l for l in links)
+
+
 def test_normalize_url():
     """URL 规范化"""
     assert normalize_url("https://ex.com/path?a=1#frag") == "https://ex.com/path?a=1"
