@@ -153,6 +153,28 @@ async def _explore_spa_menus(page, recorder, config) -> list[str]:
     discovered_urls = set()
     original_url = page.url
 
+    # 第一步：展开所有子菜单（点击 submenu title）
+    SUBMENU_SELECTORS = [
+        ".el-submenu__title",
+        ".ant-menu-submenu-title",
+        ".n-submenu-children",
+    ]
+    for selector in SUBMENU_SELECTORS:
+        try:
+            submenus = await page.query_selector_all(selector)
+            for sub in submenus:
+                try:
+                    if await sub.is_visible():
+                        await sub.click(timeout=3000)
+                        await asyncio.sleep(0.5)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    await asyncio.sleep(1)  # 等子菜单展开动画完成
+
+    # 第二步：点击所有菜单项
     for selector in MENU_SELECTORS:
         try:
             items = await page.query_selector_all(selector)
@@ -187,13 +209,20 @@ async def _explore_spa_menus(page, recorder, config) -> list[str]:
                     except Exception:
                         continue
 
-                    # 检查 URL 是否变化
+                    # 检查结果：URL 变化 或 新请求产生
                     new_url = page.url
-                    if new_url != original_url and new_url not in discovered_urls:
+                    after_count = recorder.captured_count
+                    new_requests = after_count - before_count
+                    url_changed = new_url != original_url and new_url not in discovered_urls
+
+                    if url_changed:
                         discovered_urls.add(new_url)
-                        after_count = recorder.captured_count
+
+                    if url_changed or new_requests > 0:
                         logger.info("  菜单: %s → %s (新增 %d 请求)",
-                                   text[:20], new_url[-50:], after_count - before_count)
+                                   text[:20], new_url[-50:], new_requests)
+                    else:
+                        logger.debug("  菜单: %s — 无变化", text[:20])
 
                 except Exception:
                     continue
@@ -307,7 +336,7 @@ async def explore_pages(
             logger.warning("链接提取失败: %s", e)
 
         # 层 1.5：SPA 菜单点击探索（Vue/React 等 SPA 框架的菜单没有 href）
-        if depth == 0:  # 只在首页做菜单探索，避免重复
+        if depth <= 1:  # 首页 + 一级页面都做菜单探索
             try:
                 menu_urls = await _explore_spa_menus(page, recorder, config)
                 for menu_url in menu_urls:
