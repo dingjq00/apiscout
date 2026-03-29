@@ -125,12 +125,10 @@ class ExplorationProgress:
 
 
 async def _explore_spa_menus(page, recorder, config) -> list[str]:
-    """SPA 菜单点击探索 — 找到菜单项并逐个点击，收集触发的路由变化
-
-    适用于 Vue/React 等 SPA 框架，菜单没有标准 <a href>，
-    只能通过点击来发现路由。
-    """
+    """SPA 菜单点击探索 — 找到菜单项并逐个点击，收集触发的路由变化"""
     import asyncio
+
+    logger.info("SPA 菜单探索开始 (当前 URL: %s)", page.url)
 
     # 常见 SPA 框架的菜单选择器（覆盖 Element UI / Ant Design / 通用）
     MENU_SELECTORS = [
@@ -173,12 +171,14 @@ async def _explore_spa_menus(page, recorder, config) -> list[str]:
             pass
 
     await asyncio.sleep(1)  # 等子菜单展开动画完成
+    logger.info("子菜单展开完毕，开始查找菜单项...")
 
     # 第二步：点击所有菜单项
     for selector in MENU_SELECTORS:
         try:
             items = await page.query_selector_all(selector)
             if not items:
+                logger.debug("  选择器 %s: 0 个", selector)
                 continue
 
             logger.info("发现 %d 个菜单项 (选择器: %s)", len(items), selector)
