@@ -315,7 +315,7 @@ async def explore_pages(
                 if menu_urls:
                     logger.info("SPA 菜单探索发现 %d 个路由", len(menu_urls))
             except Exception as e:
-                logger.debug("SPA 菜单探索跳过: %s", e)
+                logger.warning("SPA 菜单探索失败: %s: %s", type(e).__name__, e)
 
         # 层 2：JS 静态分析（同源脚本，最多处理 20 个）
         try:

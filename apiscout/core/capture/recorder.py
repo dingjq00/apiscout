@@ -79,6 +79,20 @@ class PageRecorder:
         resource_type = request.resource_type
         content_type = response.headers.get("content-type", "")
 
+        # 自动检测域名跳转（www → www2 等场景）
+        from urllib.parse import urlparse
+        req_origin = f"{urlparse(request.url).scheme}://{urlparse(request.url).netloc}"
+        if req_origin != self.filter.target_origin:
+            # 检查是否是同一基础域名的子域名
+            req_host = urlparse(request.url).netloc
+            filter_host = urlparse(self.filter.target_origin).netloc
+            req_base = ".".join(req_host.split(".")[-2:])
+            filter_base = ".".join(filter_host.split(".")[-2:])
+            if req_base == filter_base and resource_type in ("fetch", "xhr"):
+                logger.info("检测到子域名跳转: %s → %s，自动更新过滤器",
+                           self.filter.target_origin, req_origin)
+                self.filter.target_origin = req_origin
+
         # 过滤
         if not self.filter.should_capture(
             url=request.url,

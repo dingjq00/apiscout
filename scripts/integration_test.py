@@ -22,6 +22,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
+# recorder 的过滤日志用 DEBUG 级别，单独开启
+logging.getLogger("apiscout.core.capture.recorder").setLevel(logging.DEBUG)
 logger = logging.getLogger("apiscout")
 
 
