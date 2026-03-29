@@ -37,9 +37,12 @@ SWAGGER_UI_TEMPLATE = """<!DOCTYPE html>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
-        const spec = {spec_json};
+        // 用 Blob URL 加载 spec，绕开 file:// 协议的 $ref 解析限制
+        const specJson = JSON.stringify({spec_json});
+        const blob = new Blob([specJson], {{type: 'application/json'}});
+        const specUrl = URL.createObjectURL(blob);
         SwaggerUIBundle({{
-            spec: spec,
+            url: specUrl,
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
@@ -49,6 +52,7 @@ SWAGGER_UI_TEMPLATE = """<!DOCTYPE html>
             layout: "BaseLayout",
             defaultModelsExpandDepth: 1,
             docExpansion: "list",
+            validatorUrl: null,
         }});
     </script>
 </body>
@@ -76,8 +80,9 @@ def generate_swagger_html(
         logger.error("无效的 spec 格式")
         return
 
-    # 展开所有 $ref 引用（Swagger UI 从 file:// 加载时解析 $ref 有 bug）
-    spec = _resolve_refs(spec)
+    # HTML 文档专用：把 $ref 替换为可读描述（避免 Swagger UI 解析问题）
+    import copy
+    spec = _flatten_refs_for_display(copy.deepcopy(spec))
 
     # 提取信息
     title = title or spec.get("info", {}).get("title", "API 文档")
@@ -100,28 +105,23 @@ def generate_swagger_html(
     logger.info("Swagger UI 生成: %s (%d 端点)", output_path, path_count)
 
 
-def _resolve_refs(spec: dict) -> dict:
-    """递归展开所有 $ref 引用，生成自包含的 spec"""
-    import copy
-    schemas = spec.get("components", {}).get("schemas", {})
+def _flatten_refs_for_display(spec: dict) -> dict:
+    """把所有 $ref 替换为可读的内联描述（HTML 文档专用）"""
 
-    def resolve(obj, depth=0):
-        if depth > 10:  # 防止循环引用无限递归
-            return obj
+    def flatten(obj):
         if isinstance(obj, dict):
-            if "$ref" in obj and len(obj) == 1:
-                ref_path = obj["$ref"]
-                # 只处理 #/components/schemas/xxx 格式
-                if ref_path.startswith("#/components/schemas/"):
-                    schema_name = ref_path.split("/")[-1]
-                    if schema_name in schemas:
-                        return resolve(copy.deepcopy(schemas[schema_name]), depth + 1)
-                return obj
-            return {k: resolve(v, depth) for k, v in obj.items()}
+            if "$ref" in obj:
+                ref = obj["$ref"]
+                name = ref.split("/")[-1] if "/" in ref else ref
+                # 如果是 array items 里的 $ref
+                return {"type": "object", "description": f"关联实体: {name}"}
+            return {k: flatten(v) for k, v in obj.items()}
         elif isinstance(obj, list):
-            return [resolve(item, depth) for item in obj]
+            return [flatten(item) for item in obj]
         return obj
 
-    resolved = copy.deepcopy(spec)
-    resolved["paths"] = resolve(resolved.get("paths", {}))
-    return resolved
+    spec["paths"] = flatten(spec.get("paths", {}))
+    # 保留 components/schemas 供 Models 区域展示，但也 flatten 里面的 $ref
+    if "components" in spec and "schemas" in spec["components"]:
+        spec["components"]["schemas"] = flatten(spec["components"]["schemas"])
+    return spec

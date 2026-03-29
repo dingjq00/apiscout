@@ -12,6 +12,7 @@ from apiscout.core.generator.auth_profile import (
     write_auth_profile, find_login_endpoint,
 )
 from apiscout.core.generator.report import write_report
+from apiscout.core.generator.swagger_ui import generate_swagger_html
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,16 @@ def generate_outputs(
     )
     logger.info("生成: report.html")
 
-    # 4. 项目元信息（供后续 enrich/集成使用）
+    # 4. Swagger UI 交互式文档
+    generate_swagger_html(
+        spec=str(output_path / "draft_spec.yaml"),
+        output_path=str(output_path / "api_docs.html"),
+        title=title,
+        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+    )
+    logger.info("生成: api_docs.html (交互式 API 文档)")
+
+    # 5. 项目元信息（供后续 enrich/集成使用）
     meta = {
         "tool": "APIScout",
         "version": "0.1.0",

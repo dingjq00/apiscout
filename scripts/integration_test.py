@@ -106,6 +106,15 @@ async def main():
                 path_count = len(adapter_spec.get("paths", {}))
                 schema_count = len(adapter_spec.get("components", {}).get("schemas", {}))
                 logger.info("适配器生成成功: %d 端点, %d schema", path_count, schema_count)
+                # 生成 Swagger UI 交互式文档
+                from apiscout.core.generator.swagger_ui import generate_swagger_html
+                generate_swagger_html(
+                    spec=adapter_spec,
+                    output_path=str(output_dir / "api_docs.html"),
+                    title=f"{parsed.netloc} API",
+                    generated_at=__import__("datetime").datetime.now().strftime("%Y-%m-%d"),
+                )
+                logger.info("交互式文档: %s", output_dir / "api_docs.html")
         else:
             logger.info("未匹配到已知框架，将使用通用抓包策略")
 
