@@ -37,11 +37,22 @@ def explore(url, output, append, resume):
 
 @main.command()
 @click.argument("capture_file")
-@click.option("--output", "-o", default="draft_spec.yaml", help="输出文件")
-def analyze(capture_file, output):
+@click.option("--output", "-o", default="./output", help="输出目录")
+@click.option("--title", default="APIScout 发现的 API", help="API 文档标题")
+def analyze(capture_file, output, title):
     """分析捕获数据，生成草稿 spec"""
-    click.echo(f"📊 分析: {capture_file} → {output}")
-    click.echo("   [待实现 — Task 17]")
+    from apiscout.core.workflow import analyze_capture, generate_outputs
+    from pathlib import Path
+
+    click.echo(f"分析: {capture_file}")
+
+    result = analyze_capture(capture_file)
+    stats = result["stats"]
+    click.echo(f"   发现 {stats['total_endpoints']} 个端点 ({stats['confirmed']} 确认, {stats['uncertain']} 待确认)")
+    click.echo(f"   认证类型: {result['auth'].get('type', 'unknown')}")
+
+    generate_outputs(result, output, title=title)
+    click.echo(f"   输出目录: {output}")
 
 
 @main.command()
