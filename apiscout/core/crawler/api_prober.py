@@ -83,23 +83,19 @@ async def probe_api_endpoints(
                     }});
                     const ct = resp.headers.get("content-type") || "";
                     let body = null;
-                    let fullBody = null;
                     const isJson = ct.includes("json");
                     if (isJson) {{
                         const text = await resp.text();
                         body = text.substring(0, 50000);
-                        fullBody = {'true' if is_spec_endpoint else 'false'} ? text : null;
                     }}
                     return {{
                         status: resp.status,
                         content_type: ct,
                         body: body,
-                        fullBody: fullBody,
                         is_json: isJson,
-                        bodySize: body ? body.length : 0,
                     }};
                 }} catch (e) {{
-                    return {{status: 0, content_type: "", body: null, fullBody: null, is_json: false, error: e.message}};
+                    return {{status: 0, content_type: "", body: null, is_json: false, error: e.message}};
                 }}
             }}
             """
@@ -124,22 +120,25 @@ async def probe_api_endpoints(
                 except (json.JSONDecodeError, TypeError):
                     body = resp["body"]
 
-            # 对 OpenAPI/Swagger spec 端点，保存完整 JSON 到文件
-            if is_spec_endpoint and status == 200 and is_json and resp.get("fullBody") and output_dir:
+            # 对 OpenAPI/Swagger spec 端点，用 Playwright request API 下载完整内容
+            # page.evaluate 有 DevTools protocol 大小限制，大 spec 传不回来
+            if is_spec_endpoint and status == 200 and is_json and output_dir:
                 try:
-                    full_body = json.loads(resp["fullBody"])
-                    if isinstance(full_body, dict) and ("openapi" in full_body or "swagger" in full_body):
-                        from pathlib import Path
-                        spec_file = Path(output_dir) / "discovered_spec.yaml"
-                        import yaml
-                        with open(spec_file, "w", encoding="utf-8") as f:
-                            yaml.dump(full_body, f, default_flow_style=False,
-                                     allow_unicode=True, sort_keys=False)
-                        body = full_body  # 用完整的作为 body
-                        logger.info("已保存完整 OpenAPI spec: %s (%d 字节)",
-                                   spec_file, len(resp["fullBody"]))
-                except (json.JSONDecodeError, TypeError) as e:
-                    logger.warning("OpenAPI spec 解析失败: %s", e)
+                    # 用 page.request（携带浏览器 cookie）直接下载
+                    api_resp = await page.request.get(url)
+                    if api_resp.ok:
+                        full_body = await api_resp.json()
+                        if isinstance(full_body, dict) and ("openapi" in full_body or "swagger" in full_body):
+                            from pathlib import Path
+                            import yaml
+                            spec_file = Path(output_dir) / "discovered_spec.yaml"
+                            with open(spec_file, "w", encoding="utf-8") as f:
+                                yaml.dump(full_body, f, default_flow_style=False,
+                                         allow_unicode=True, sort_keys=False)
+                            body = full_body
+                            logger.info("已保存完整 OpenAPI spec: %s", spec_file)
+                except Exception as e:
+                    logger.warning("OpenAPI spec 下载失败: %s", e)
 
             result = ProbeResult(
                 path=endpoint["path"],
