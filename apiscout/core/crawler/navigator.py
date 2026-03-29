@@ -378,13 +378,23 @@ async def explore_pages(
     js_endpoints: list[str] = []
     clicked_texts: set[str] = set()  # 跨页面记录已点击的文本，防重复
 
+    consecutive_no_new = 0  # 连续无新端点的页面数
+    MAX_NO_NEW_PAGES = 3   # 连续 N 页无新端点则停止
+
     while not queue.is_empty():
         url, depth = queue.pop()
 
-        # Session 过期检测 — 连续 3 次认证失败则暂停
+        # Session 过期检测
         if recorder.auth_failure_count >= 3:
             logger.warning("Session 可能已过期（连续认证失败 %d 次），暂停探索", recorder.auth_failure_count)
             break
+
+        # 智能停止：连续多页无新 API 端点则提前结束
+        if consecutive_no_new >= MAX_NO_NEW_PAGES:
+            logger.info("连续 %d 页无新端点，自动停止探索", MAX_NO_NEW_PAGES)
+            break
+
+        before_page_count = recorder.captured_count
 
         # 导航到页面
         try:
@@ -471,6 +481,13 @@ async def explore_pages(
             )
         except Exception as e:
             logger.debug("滚动加载跳过: %s", e)
+
+        # 检查本页是否发现了新请求
+        after_page_count = recorder.captured_count
+        if after_page_count > before_page_count:
+            consecutive_no_new = 0
+        else:
+            consecutive_no_new += 1
 
     return {
         "pages_visited": queue.stats()["visited"],
