@@ -9,7 +9,7 @@ from apiscout.core.capture.store import CaptureStore
 from apiscout.core.analyzer.dedup import EndpointAggregator
 from apiscout.core.generator.openapi import write_openapi_yaml
 from apiscout.core.generator.auth_profile import (
-    generate_auth_profile, write_auth_profile, find_login_endpoint,
+    write_auth_profile, find_login_endpoint,
 )
 from apiscout.core.generator.report import write_report
 

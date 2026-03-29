@@ -42,7 +42,6 @@ def explore(url, output, append, resume):
 def analyze(capture_file, output, title):
     """分析捕获数据，生成草稿 spec"""
     from apiscout.core.workflow import analyze_capture, generate_outputs
-    from pathlib import Path
 
     click.echo(f"分析: {capture_file}")
 

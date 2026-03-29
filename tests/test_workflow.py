@@ -1,7 +1,6 @@
 """工作流测试 — 测试分析和生成管线（不启动浏览器）"""
 import json
 import yaml
-from pathlib import Path
 from apiscout.core.workflow import analyze_capture, generate_outputs
 
 
