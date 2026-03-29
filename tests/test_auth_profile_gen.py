@@ -1,5 +1,4 @@
 """认证档案生成测试"""
-import yaml
 from apiscout.core.generator.auth_profile import generate_auth_profile, find_login_endpoint
 from apiscout.core.capture.store import CaptureRecord
 
