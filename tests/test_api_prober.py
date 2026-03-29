@@ -41,15 +41,18 @@ def test_summarize_auth_required():
 
 
 def test_summarize_framework_hints():
-    """框架特征检测"""
+    """框架特征检测（去重）"""
     results = [
         ProbeResult(path="/actuator", type="actuator", desc="", status=200),
         ProbeResult(path="/rest/entities", type="jmix_entities", desc="", status=200,
                     body=[{"name": "Product"}]),
+        ProbeResult(path="/rest/services", type="jmix_services", desc="", status=200),
     ]
     summary = summarize_probe_results(results)
-    assert "Spring Boot (Actuator)" in summary["framework_hints"]
+    assert "Spring Boot" in summary["framework_hints"]
     assert "Jmix" in summary["framework_hints"]
+    # 不应该重复
+    assert summary["framework_hints"].count("Jmix") == 1
 
 
 def test_summarize_empty():

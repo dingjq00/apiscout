@@ -69,27 +69,29 @@ async def probe_api_endpoints(
         url = urljoin(base_url, endpoint["path"])
         try:
             # 用页面内 JS 发 fetch，自动携带 session
+            # 大 body 只取前 200KB 避免 evaluate 传输超限
             probe_js = f"""
             async () => {{
                 try {{
                     const resp = await fetch("{url}", {{
                         method: "GET",
                         headers: {{"Accept": "application/json, */*"}},
-                        redirect: "manual",
                     }});
                     const ct = resp.headers.get("content-type") || "";
                     let body = null;
-                    if (ct.includes("json")) {{
-                        body = await resp.text();
+                    const isJson = ct.includes("json");
+                    if (isJson) {{
+                        const text = await resp.text();
+                        body = text.substring(0, 200000);
                     }}
                     return {{
                         status: resp.status,
                         content_type: ct,
                         body: body,
-                        redirected: resp.type === "opaqueredirect",
+                        is_json: isJson,
                     }};
                 }} catch (e) {{
-                    return {{status: 0, content_type: "", body: null, error: e.message}};
+                    return {{status: 0, content_type: "", body: null, is_json: false, error: e.message}};
                 }}
             }}
             """
@@ -97,6 +99,13 @@ async def probe_api_endpoints(
 
             status = resp.get("status", 0)
             if status == 0:
+                continue
+
+            content_type = resp.get("content_type", "")
+            is_json = resp.get("is_json", False)
+
+            # Vaadin SPA 对所有路由返回 200 + text/html — 这不是真 API
+            if status == 200 and not is_json and "html" in content_type:
                 continue
 
             # 解析 body
@@ -112,16 +121,18 @@ async def probe_api_endpoints(
                 type=endpoint["type"],
                 desc=endpoint["desc"],
                 status=status,
-                content_type=resp.get("content_type", ""),
+                content_type=content_type,
                 body=body,
                 needs_auth=(status in (401, 403)),
             )
 
-            # 只记录有意义的结果（200/401/403）
-            if status in (200, 401, 403):
+            # 只记录有意义的结果（200 JSON / 401 / 403）
+            if status == 200 and is_json:
                 results.append(result)
-                icon = "✅" if status == 200 else "🔒"
-                logger.info("%s [%d] %s — %s", icon, status, endpoint["path"], endpoint["desc"])
+                logger.info("✅ [%d] %s — %s", status, endpoint["path"], endpoint["desc"])
+            elif status in (401, 403):
+                results.append(result)
+                logger.info("🔒 [%d] %s — %s", status, endpoint["path"], endpoint["desc"])
 
         except Exception as e:
             logger.debug("探测跳过 %s: %s", endpoint["path"], e)
@@ -151,9 +162,9 @@ def summarize_probe_results(results: list[ProbeResult]) -> dict:
                     logger.info("发现现成的 OpenAPI spec！路径: %s", r.path)
 
             # 框架检测
-            if r.type == "actuator":
-                summary["framework_hints"].append("Spring Boot (Actuator)")
-            elif r.type.startswith("jmix"):
+            if r.type == "actuator" and "Spring Boot" not in summary["framework_hints"]:
+                summary["framework_hints"].append("Spring Boot")
+            elif r.type.startswith("jmix") and "Jmix" not in summary["framework_hints"]:
                 summary["framework_hints"].append("Jmix")
 
         elif r.needs_auth:
