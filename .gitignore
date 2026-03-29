@@ -30,3 +30,4 @@ pack/build/
 
 # Playwright browsers (downloaded at runtime)
 .playwright/
+pack/portable/
