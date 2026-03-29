@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APIScout 使用指南</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 32px; color: #0f172a; margin-bottom: 8px; }
+  .subtitle { color: #64748b; font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 22px; color: #1e40af; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #dbeafe; }
+  h3 { font-size: 17px; color: #334155; margin: 24px 0 12px; }
+  p { margin: 12px 0; color: #475569; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 14px; color: #be185d; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 10px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; }
+  .step { display: flex; gap: 16px; margin: 24px 0; align-items: flex-start; }
+  .step-num { background: #2563eb; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .step-content { flex: 1; }
+  .step-title { font-weight: 600; font-size: 16px; color: #0f172a; margin-bottom: 4px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .highlight { background: #eff6ff; border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .success { background: #dcfce7; border-left: 4px solid #22c55e; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #1e40af; color: white; padding: 10px 14px; text-align: left; font-size: 13px; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+  tr:nth-child(even) { background: #f8fafc; }
+  .terminal { background: #0f172a; color: #22d3ee; padding: 20px; border-radius: 10px; font-family: monospace; font-size: 14px; line-height: 1.8; margin: 16px 0; }
+  .terminal .prompt { color: #a78bfa; }
+  .terminal .output { color: #94a3b8; }
+  .terminal .highlight-line { color: #4ade80; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .screenshot { background: #e2e8f0; border-radius: 8px; padding: 40px; text-align: center; color: #64748b; font-size: 14px; margin: 12px 0; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>APIScout 使用指南</h1>
+<p class="subtitle">从安装到出文档，5 分钟搞定</p>
+
+<h2>一、安装</h2>
+
+<h3>方式 A：你的电脑有 Python（Mac/Linux/Windows）</h3>
+<div class="terminal">
+<span class="prompt">$</span> pip install playwright genson pyyaml jinja2 click fastapi uvicorn<br>
+<span class="prompt">$</span> playwright install chromium<br>
+<span class="prompt">$</span> cd apiscout && pip install -e .<br>
+<span class="output"># 完成！</span>
+</div>
+
+<h3>方式 B：同事的 Windows 电脑没有 Python（离线安装）</h3>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-content">
+    <div class="step-title">U 盘拷贝 apiscout 项目文件夹</div>
+    <p>约 230MB，包含 Python、Chromium、所有依赖</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-content">
+    <div class="step-title">双击 <code>pack/portable/install_offline.bat</code></div>
+    <p>自动解压 Python + 安装依赖 + 解压浏览器引擎，约 1 分钟</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-content">
+    <div class="step-title">双击生成的「启动APIScout.bat」</div>
+    <p>Web 面板自动启动，浏览器自动打开</p>
+  </div>
+</div>
+
+<h2>二、使用方式（推荐：Web 面板）</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-content">
+    <div class="step-title">启动 Web 面板</div>
+    <div class="terminal">
+<span class="prompt">$</span> apiscout web<br>
+<span class="output">APIScout Web 面板: http://localhost:9527</span>
+    </div>
+    <p>浏览器自动打开控制页面</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-content">
+    <div class="step-title">输入目标系统 URL，点击「开始扫描」</div>
+    <p>输入客户系统的地址，例如 <code>https://eam.customer.com</code></p>
+    <p>Playwright 浏览器窗口弹出</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-content">
+    <div class="step-title">在弹出的浏览器中登录系统</div>
+    <p>输入用户名密码登录。APIScout 不存储密码，只借用登录后的 session。</p>
+    <div class="warning">
+      <strong>安全提示</strong>：APIScout 只录制网络请求，不修改任何数据，不点击任何危险按钮。
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-content">
+    <div class="step-title">正常操作系统</div>
+    <p>像平时使用系统一样操作：点菜单、看列表、查详情、搜索。每个操作触发的 API 都会被自动录制。</p>
+    <p>Web 面板实时显示已捕获的请求数量。</p>
+    <div class="highlight">
+      <strong>技巧</strong>：尽量多点不同的功能模块。每个菜单点一遍，覆盖率最高。
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-content">
+    <div class="step-title">点击「停止录制 → 生成文档」</div>
+    <p>APIScout 自动分析录制的数据：</p>
+    <ul style="margin:8px 0; padding-left:20px; color:#475569;">
+      <li>识别所有 API 端点</li>
+      <li>推断请求/响应 schema</li>
+      <li>检测认证方式</li>
+      <li>生成 OpenAPI spec + Swagger UI 交互文档</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">6</div>
+  <div class="step-content">
+    <div class="step-title">查看结果</div>
+    <p>点击页面上的链接查看生成的文档。最重要的是 <strong>Swagger UI 文档</strong> — 交互式 API 文档，可以看到所有端点、参数、响应格式。</p>
+  </div>
+</div>
+
+<h2>三、使用方式（命令行）</h2>
+
+<h3>手动录制模式（推荐）</h3>
+<div class="terminal">
+<span class="prompt">$</span> apiscout scan https://eam.customer.com --manual<br>
+<span class="output">APIScout v0.1.0</span><br>
+<span class="output">目标: https://eam.customer.com</span><br>
+<span class="output">模式: 手动</span><br>
+<br>
+<span class="output">>>> 打开目标系统...</span><br>
+<span class="output">==================================================</span><br>
+<span class="output">请在浏览器中登录系统</span><br>
+<span class="output">登录完成后按 Enter 继续</span><br>
+<span class="output">==================================================</span><br>
+<br>
+<span class="output">>>> 框架检测...</span><br>
+<span class="highlight-line">检测到: Jmix (置信度 100%)</span><br>
+<span class="highlight-line">适配器生成: 48 个端点</span><br>
+<br>
+<span class="output">==================================================</span><br>
+<span class="output">浏览器保持打开，你可以自由操作系统</span><br>
+<span class="output">所有操作都在录制中</span><br>
+<span class="output">完成后按 Enter 生成文档</span><br>
+<span class="output">==================================================</span><br>
+<span class="output">  录制中... 已捕获 51 请求</span><br>
+<span class="output">  录制中... 已捕获 87 请求</span><br>
+<br>
+<span class="highlight-line">最终捕获: 117 请求</span><br>
+<span class="highlight-line">端点: 51 (51 确认, 0 待确认)</span><br>
+<span class="highlight-line">认证: bearer_jwt</span><br>
+</div>
+
+<h3>导入已有 Swagger</h3>
+<div class="terminal">
+<span class="prompt">$</span> apiscout import swagger.json<br>
+<span class="output">读取: swagger.json</span><br>
+<span class="output">  版本: 3.0.1</span><br>
+<span class="output">  标题: Customer EAM API</span><br>
+<span class="highlight-line">  端点: 127 个</span><br>
+<span class="output">  输出: output/swagger/</span>
+</div>
+
+<h3>分析已有数据</h3>
+<div class="terminal">
+<span class="prompt">$</span> apiscout analyze output/customer/capture.jsonl<br>
+<span class="output">分析: output/customer/capture.jsonl</span><br>
+<span class="highlight-line">  端点: 68 (68 确认, 0 待确认)</span><br>
+<span class="output">  认证: bearer_jwt</span><br>
+<span class="output">  输出: output/customer/</span>
+</div>
+
+<h3>多次扫描累积</h3>
+<div class="terminal">
+<span class="prompt"># 第一次：管理员账号</span><br>
+<span class="prompt">$</span> apiscout scan https://eam.customer.com --manual<br>
+<br>
+<span class="prompt"># 第二次：普通用户（数据追加）</span><br>
+<span class="prompt">$</span> apiscout scan https://eam.customer.com --manual --append<br>
+<br>
+<span class="prompt"># 合并分析</span><br>
+<span class="prompt">$</span> apiscout analyze output/eam.customer.com/capture.jsonl
+</div>
+
+<h2>四、输出文件说明</h2>
+
+<table>
+<tr><th>文件</th><th>说明</th><th>给谁看</th></tr>
+<tr><td><strong>api_docs.html</strong></td><td>Swagger UI 交互式 API 文档，可展开每个端点查看参数和响应</td><td>开发者、客户 IT</td></tr>
+<tr><td>draft_spec.yaml</td><td>OpenAPI 3.1 规格书（机器可读）</td><td>程序消费</td></tr>
+<tr><td>auth_profile.yaml</td><td>认证方式档案（JWT/Basic/API Key/Cookie）</td><td>集成开发者</td></tr>
+<tr><td>report.html</td><td>覆盖率报告（端点统计、方法分布）</td><td>项目经理</td></tr>
+<tr><td>capture.jsonl</td><td>原始捕获数据（可重新分析）</td><td>内部存档</td></tr>
+<tr><td>meta.yaml</td><td>项目元信息（时间、统计）</td><td>内部存档</td></tr>
+</table>
+
+<h2>五、完整命令参考</h2>
+
+<table>
+<tr><th>命令</th><th>说明</th><th>示例</th></tr>
+<tr><td><code>apiscout web</code></td><td>启动 Web 面板</td><td><code>apiscout web -p 8000</code></td></tr>
+<tr><td><code>apiscout scan URL</code></td><td>扫描系统</td><td><code>apiscout scan https://target.com --manual</code></td></tr>
+<tr><td><code>apiscout import FILE</code></td><td>导入 Swagger</td><td><code>apiscout import swagger.json</code></td></tr>
+<tr><td><code>apiscout analyze FILE</code></td><td>分析数据</td><td><code>apiscout analyze capture.jsonl</code></td></tr>
+<tr><td><code>apiscout enrich DIR</code></td><td>AI 增强</td><td><code>apiscout enrich output/ --api-key KEY</code></td></tr>
+</table>
+
+<h2>六、常见问题</h2>
+
+<div class="card">
+  <h3>Q: 抓不到 API 请求？</h3>
+  <p>可能原因：前端和后端在不同端口/域名。APIScout 已改为黑名单模式，会录制所有 XHR/fetch 请求。如果仍抓不到，用 <code>--debug</code> 参数查看详细日志。</p>
+</div>
+
+<div class="card">
+  <h3>Q: 系统用了 Vaadin/JSF 等服务端渲染框架？</h3>
+  <p>浏览器不发 REST API 请求，抓包抓不到。APIScout 会自动检测框架并尝试使用适配器（如 Jmix metadata）。如果没有适配器，可以走数据库 schema 路径（V1.1）。</p>
+</div>
+
+<div class="card">
+  <h3>Q: 会不会修改客户数据？</h3>
+  <p><strong>不会。</strong>APIScout 只录制网络请求（被动监听），不发送任何请求、不修改任何数据。自动探索模式有安全护栏，不点击"删除/提交/保存"等按钮。手动模式下完全由你控制操作。</p>
+</div>
+
+<div class="card">
+  <h3>Q: 支持哪些技术栈？</h3>
+  <table>
+  <tr><td>前后端分离（Vue/React + REST API）</td><td>完美支持（抓包主路径）</td></tr>
+  <tr><td>若依 / JeecgBoot</td><td>完美支持（适配器 + 抓包）</td></tr>
+  <tr><td>Spring Boot</td><td>完美支持（下载 Swagger + 抓包）</td></tr>
+  <tr><td>Jmix</td><td>完美支持（metadata 适配器）</td></tr>
+  <tr><td>Vaadin / JSF / Wicket</td><td>适配器模式（浏览器抓包无效）</td></tr>
+  <tr><td>传统 MVC（jQuery/JSP/PHP）</td><td>支持（如果有 XHR 调用）</td></tr>
+  </table>
+</div>
+
+<div class="success">
+  <strong>最佳实践</strong>：不管什么系统，先用 <code>apiscout scan URL --manual</code> 试一遍。登录后点几个菜单，看能抓到多少 API。抓到就行，抓不到再换路径。
+</div>
+
+</div>
+</body>
+</html>

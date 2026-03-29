@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APIScout 系统架构文档</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 32px; color: #0f172a; margin-bottom: 8px; }
+  .subtitle { color: #64748b; font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 22px; color: #1e40af; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #dbeafe; }
+  h3 { font-size: 17px; color: #334155; margin: 24px 0 12px; }
+  p { margin: 12px 0; color: #475569; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 14px; color: #be185d; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 10px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #1e40af; color: white; padding: 10px 14px; text-align: left; font-size: 13px; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+  tr:nth-child(even) { background: #f8fafc; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .card-title { font-size: 16px; font-weight: 600; color: #1e40af; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; margin: 2px; }
+  .tag-done { background: #dcfce7; color: #166534; }
+  .tag-plan { background: #fef9c3; color: #854d0e; }
+  .flow-box { background: #1e40af; color: white; padding: 12px 20px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 500; }
+  .flow-arrow { text-align: center; font-size: 24px; color: #94a3b8; padding: 4px 0; }
+  .highlight { background: #eff6ff; border-left: 4px solid #2563eb; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  @media (max-width: 768px) { .grid, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>APIScout 系统架构文档</h1>
+<p class="subtitle">客户系统接入方案生成器 — 给我一个 URL，还你一份 OpenAPI spec</p>
+<p style="color:#94a3b8; font-size:13px;">版本 0.1.0 | 2026-03-30 | dingjq + Claude 协作</p>
+
+<h2>1. 产品定位</h2>
+
+<div class="highlight">
+<strong>核心价值</strong>：不管客户系统什么技术栈、有没有 API 文档，都能快速生成接入方案。<br>
+<strong>核心体验</strong>：你正常操作系统，APIScout 在后台默默录制，操作完给你一份 API 文档。
+</div>
+
+<p>APIScout 是 <strong>insight68</strong> 客户实施的核心工具。insight68 需要对接客户的各种企业系统（EAM/MES/ERP），但每个客户的系统技术栈不同、有没有 API 文档也不确定。APIScout 解决的是"快速摸清客户系统有哪些 API"这个问题。</p>
+
+<h2>2. 六条发现路径</h2>
+
+<p>APIScout 不绑定任何一种技术方案。给什么条件，走什么路径：</p>
+
+<table>
+<tr><th>#</th><th>路径</th><th>输入</th><th>输出</th><th>状态</th></tr>
+<tr><td>1</td><td>客户直接给 Swagger 文件</td><td>JSON/YAML 文件</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
+<tr><td>2</td><td>系统有在线 Swagger 端点</td><td>URL（自动探测）</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
+<tr><td>3</td><td>框架 metadata（Jmix 等）</td><td>适配器自动探测</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
+<tr><td>4</td><td>HTTP 抓包（浏览器录制）</td><td>用户操作系统</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
+<tr><td>5</td><td>数据库 schema 扫描</td><td>DB 连接</td><td>SQL 模板集</td><td><span class="tag tag-plan">V1.1</span></td></tr>
+<tr><td>6</td><td>系统文档 + schema + AI</td><td>文档 + DB</td><td>AI 增强 SQL 模板</td><td><span class="tag tag-plan">V2</span></td></tr>
+</table>
+
+<h2>3. 系统架构</h2>
+
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                        用户界面层                            │
+│  ┌──────────┐  ┌──────────────────────┐  ┌──────────────┐  │
+│  │  CLI     │  │  Web 面板            │  │  (未来)      │  │
+│  │  5 命令  │  │  FastAPI + WebSocket │  │  桌面端      │  │
+│  └────┬─────┘  └──────────┬───────────┘  └──────────────┘  │
+└───────┼──────────────────┼──────────────────────────────────┘
+        │                  │
+┌───────┴──────────────────┴──────────────────────────────────┐
+│                      适配器层 adapters/                       │
+│                                                              │
+│  每种技术栈一个适配器，@register 注册，自动检测 + 策略分发      │
+│                                                              │
+│  ┌─────────┐  ┌──────────────┐  ┌────────┐  ┌───────────┐  │
+│  │  Jmix   │  │  Spring Boot │  │  若依  │  │ database  │  │
+│  │metadata │  │  /v3/api-docs│  │swagger │  │  schema   │  │
+│  │→ spec   │  │  → spec      │  │→ spec  │  │ → SQL模板 │  │
+│  └─────────┘  └──────────────┘  └────────┘  └───────────┘  │
+│      已实现         已实现          已实现       V1.1 规划    │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────┴──────────────────────────────────┐
+│                      核心引擎 core/                          │
+│                                                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐  │
+│  │  crawler/   │  │  capture/    │  │  analyzer/        │  │
+│  │  页面探索   │  │  网络录制     │  │  分析推断         │  │
+│  │  · navigator│  │  · recorder  │  │  · router 路由    │  │
+│  │  · api_prober│ │  · filter    │  │  · schema 推断    │  │
+│  │  · links    │  │  · store     │  │  · auth 认证      │  │
+│  │  · js分析   │  │  (JSONL)     │  │  · dedup 聚合     │  │
+│  │  · scroll   │  │              │  │                   │  │
+│  └─────────────┘  └──────────────┘  └───────────────────┘  │
+│                                                              │
+│  ┌──────────────────────────────┐  ┌────────────────────┐  │
+│  │  generator/ 输出生成          │  │  workflow.py       │  │
+│  │  · openapi.py    YAML spec   │  │  工作流编排         │  │
+│  │  · swagger_ui.py HTML 文档   │  │  analyze → generate│  │
+│  │  · auth_profile  认证档案    │  │                    │  │
+│  │  · report.py     覆盖率报告  │  │                    │  │
+│  │  · jmix_spec.py  Jmix 生成  │  │                    │  │
+│  │  · ai_enricher   AI 增强    │  │                    │  │
+│  └──────────────────────────────┘  └────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>4. 核心模块详解</h2>
+
+<div class="grid">
+<div class="card">
+  <div class="card-title">capture/ 网络录制层</div>
+  <p><code>recorder.py</code> — Playwright 响应监听，挂载到浏览器页面</p>
+  <p><code>filter.py</code> — 黑名单模式：录一切，只排除已知第三方（Google/百度/CDN）和框架噪声（Vaadin UIDL）</p>
+  <p><code>store.py</code> — JSONL 增量写盘，每条记录立即持久化，崩溃安全</p>
+</div>
+
+<div class="card">
+  <div class="card-title">analyzer/ 分析推断引擎</div>
+  <p><code>router.py</code> — 路径参数化归并。支持 UUID/雪花ID/MongoDB ObjectId/编码ID/数字ID/Hash 六种模式，保留词排除（api/v1/日期）</p>
+  <p><code>schema_engine.py</code> — genson 多次合并 + format 检测（date-time/email/uuid）+ enum 检测</p>
+  <p><code>auth_detector.py</code> — Bearer JWT / Basic / API Key / Cookie / 金蝶 / 用友非标</p>
+  <p><code>dedup.py</code> — 端点聚合 + query 参数推断</p>
+</div>
+
+<div class="card">
+  <div class="card-title">crawler/ 页面探索</div>
+  <p><code>navigator.py</code> — BFS 页面队列 + SPA 菜单自动点击（通用 DOM 扫描，不依赖特定 UI 框架）+ 安全按钮探索 + 智能停止</p>
+  <p><code>api_prober.py</code> — 探测 15 个已知 API 文档端点</p>
+  <p><code>link_extractor.py</code> — DOM 链接提取（含 hash 路由）</p>
+  <p><code>js_analyzer.py</code> — 6 种正则从 JS 源码提取 API URL</p>
+</div>
+
+<div class="card">
+  <div class="card-title">adapters/ 框架适配器</div>
+  <p><code>registry.py</code> — @register 装饰器注册，detect_framework() 自动匹配</p>
+  <p><code>jmix.py</code> — /rest/metadata/entities → 完整 CRUD spec（实战验证：48 端点）</p>
+  <p><code>spring_boot.py</code> — /actuator + /v3/api-docs → 下载 spec</p>
+  <p><code>ruoyi.py</code> — /dev-api/swagger-resources → 下载 spec</p>
+  <p>加新框架 = 加一个文件 + @register，不改旧代码</p>
+</div>
+</div>
+
+<h2>5. 数据流</h2>
+
+<div style="max-width:400px; margin: 0 auto;">
+  <div class="flow-box">用户操作浏览器</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box">recorder 监听所有响应</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box">store → capture.jsonl（增量写盘）</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box">analyzer（路由 + schema + 认证 + 聚合）</div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-box">generator（OpenAPI + Swagger UI + 报告）</div>
+</div>
+
+<h2>6. 与 insight68 的接口</h2>
+
+<table>
+<tr><th>客户情况</th><th>APIScout 输出</th><th>insight68 Tool 类型</th></tr>
+<tr><td>有 REST API</td><td>OpenAPI spec</td><td>rest_api（调 API）</td></tr>
+<tr><td>有 Swagger 文件</td><td>导入 → OpenAPI spec</td><td>rest_api</td></tr>
+<tr><td>有框架 metadata</td><td>适配器 → OpenAPI spec</td><td>rest_api</td></tr>
+<tr><td>只有数据库（V1.1）</td><td>SQL 模板集</td><td>db_query（查 DB）</td></tr>
+<tr><td>有数据库 + 文档（V2）</td><td>AI 增强 SQL 模板</td><td>db_query</td></tr>
+</table>
+
+<div class="highlight">
+两种 Tool 对 insight68 用户完全透明 — "帮我查设备列表" 背后走 API 还是 SQL，用户不关心。
+</div>
+
+<h2>7. 实战验证</h2>
+
+<div class="grid-3">
+<div class="card">
+  <div class="card-title">momExecution</div>
+  <p>技术栈：Jmix + Vaadin</p>
+  <p>发现方式：适配器（metadata）</p>
+  <p>结果：<strong>48 端点，24 实体</strong></p>
+  <p>教训：Vaadin 抓包抓不到 REST</p>
+</div>
+<div class="card">
+  <div class="card-title">gtshebei.com</div>
+  <p>技术栈：Vue SPA</p>
+  <p>发现方式：手动录制</p>
+  <p>结果：<strong>51 端点，bearer_jwt</strong></p>
+  <p>教训：SPA 菜单无 href</p>
+</div>
+<div class="card">
+  <div class="card-title">eamNge</div>
+  <p>技术栈：若依 + Vue（跨端口 CORS）</p>
+  <p>发现方式：手动录制</p>
+  <p>结果：<strong>37 端点</strong></p>
+  <p>教训：前后端不同端口</p>
+</div>
+</div>
+
+<h2>8. 技术数据</h2>
+
+<table>
+<tr><td>代码量</td><td>36 模块，~6000 行（含测试）</td></tr>
+<tr><td>测试</td><td>119 个，100% 通过</td></tr>
+<tr><td>依赖</td><td>Playwright, genson, PyYAML, Jinja2, Click, FastAPI</td></tr>
+<tr><td>Python</td><td>3.11+</td></tr>
+<tr><td>便携包</td><td>226MB（含 Python + Chromium，Windows 离线安装）</td></tr>
+</table>
+
+</div>
+</body>
+</html>
