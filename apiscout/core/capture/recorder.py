@@ -103,6 +103,7 @@ class PageRecorder:
             try:
                 response_body = await response.text()
             except Exception:
+                logger.debug("响应 body 解析失败: %s %s", request.method, request.url)
                 response_body = None
 
         # 解析请求 body

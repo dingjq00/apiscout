@@ -33,7 +33,7 @@ async def main():
                         v = await item.is_visible()
                         texts.append(f"{'✅' if v else '❌'}{t}")
                     print(f"  {sel:30s} → {len(items)} 个  {texts}")
-            except:
+            except Exception:
                 pass
 
         # 额外：看看顶部导航栏的 HTML 结构

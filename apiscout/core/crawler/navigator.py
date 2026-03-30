@@ -48,6 +48,9 @@ class NavigatorConfig:
     page_timeout: int = 30           # 秒
     network_idle_wait: int = 3       # 秒
     request_delay: float = 0.5      # 秒
+    click_timeout: int = 5000        # 毫秒 — 菜单/链接点击超时
+    button_click_timeout: int = 3000 # 毫秒 — 按钮点击超时
+    close_dialog_timeout: int = 2000 # 毫秒 — 关闭弹窗超时
     exclude_patterns: list[str] = field(
         default_factory=lambda: list(_DEFAULT_EXCLUDE_PATTERNS)
     )
@@ -62,6 +65,9 @@ class NavigatorConfig:
             page_timeout=crawl.get("page_timeout", 30),
             network_idle_wait=crawl.get("network_idle_wait", 3),
             request_delay=crawl.get("request_delay", 0.5),
+            click_timeout=crawl.get("click_timeout", 5000),
+            button_click_timeout=crawl.get("button_click_timeout", 3000),
+            close_dialog_timeout=crawl.get("close_dialog_timeout", 2000),
             exclude_patterns=crawl.get("exclude_patterns", list(_DEFAULT_EXCLUDE_PATTERNS)),
         )
 
@@ -220,7 +226,7 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
             el = await page.query_selector(selector)
             if not el:
                 continue
-            await el.click(timeout=5000)
+            await el.click(timeout=config.click_timeout)
             await asyncio.sleep(config.network_idle_wait)
         except Exception:
             continue
@@ -299,7 +305,7 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
                         el = await page.query_selector(btn["selector"])
                         if not el:
                             continue
-                        await el.click(timeout=3000)
+                        await el.click(timeout=config.button_click_timeout)
                         await asyncio.sleep(2)
 
                         after_count = recorder.captured_count
@@ -314,7 +320,7 @@ async def _explore_spa_menus(page, recorder, config, known_urls: set | None = No
                                 '.ant-modal-close, [class*="close"], [aria-label="Close"]'
                             )
                             if close_btn and await close_btn.is_visible():
-                                await close_btn.click(timeout=2000)
+                                await close_btn.click(timeout=config.close_dialog_timeout)
                                 await asyncio.sleep(0.5)
                         except Exception:
                             pass

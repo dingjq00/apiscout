@@ -60,7 +60,11 @@ async def detect_framework(page, base_url: str) -> list[FrameworkMatch]:
                 for ev in match.evidence:
                     logger.info("  证据: %s", ev)
         except Exception as e:
-            logger.debug("适配器 %s 检测失败: %s", adapter_cls.__name__, e)
+            # 区分"不适用"（超时/404）和真正的代码错误
+            if isinstance(e, (TimeoutError, ConnectionError, OSError)):
+                logger.debug("适配器 %s 探测超时/连接失败: %s", adapter_cls.__name__, e)
+            else:
+                logger.warning("适配器 %s 检测异常: %s: %s", adapter_cls.__name__, type(e).__name__, e)
 
     # 按置信度降序排列
     matches.sort(key=lambda m: m.confidence, reverse=True)

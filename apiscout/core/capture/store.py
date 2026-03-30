@@ -58,7 +58,8 @@ class CaptureStore:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             # 读取已有记录数作为 seq 起点
             if self.path.exists():
-                self._seq_counter = sum(1 for line in self.path.open("r", encoding="utf-8") if line.strip())
+                with self.path.open("r", encoding="utf-8") as f:
+                    self._seq_counter = sum(1 for line in f if line.strip())
             self._file = open(self.path, "a", encoding="utf-8")
 
     def append(self, record: CaptureRecord):
@@ -88,7 +89,8 @@ class CaptureStore:
         """记录总数"""
         if not self.path.exists():
             return 0
-        return sum(1 for line in open(self.path, "r", encoding="utf-8") if line.strip())
+        with open(self.path, "r", encoding="utf-8") as f:
+            return sum(1 for line in f if line.strip())
 
     def close(self):
         if self._file:
