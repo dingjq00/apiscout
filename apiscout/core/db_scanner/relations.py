@@ -29,19 +29,63 @@ def _find_user_table(all_tables: set[str]) -> str | None:
     return None
 
 
-def _find_table_by_prefix(prefix: str, all_tables: set[str]) -> str | None:
+def _find_table_by_prefix(
+    prefix: str,
+    all_tables: set[str],
+    source_table: str = "",
+) -> str | None:
     """
     根据前缀字符串在表名集合中寻找匹配表。
-    尝试顺序：直接匹配 → t_前缀 → sys_前缀 → tb_前缀
+
+    搜索优先级：
+    1. 直接匹配：category → category
+    2. 框架前缀：category → t_category / sys_category / tb_category
+    3. 同模块后缀匹配：source=eam_equipment, prefix=category → eam_equipment_category / eam_category
+    4. 全局后缀匹配：category → *_category（按名称最短优先）
     """
-    # 直接匹配
+    # 1. 直接匹配
     if prefix in all_tables:
         return prefix
-    # 加框架前缀后匹配
+
+    # 2. 加框架前缀
     for fp in _TABLE_PREFIXES:
         candidate = fp + prefix
         if candidate in all_tables:
             return candidate
+
+    # 3. 同模块后缀匹配（source_table 的前缀 + prefix）
+    if source_table and "_" in source_table:
+        # eam_equipment → 尝试 eam_equipment_category, eam_category
+        parts = source_table.split("_")
+        # 尝试完整表名_前缀（eam_equipment_category）
+        candidate = f"{source_table}_{prefix}"
+        if candidate in all_tables:
+            return candidate
+        # 尝试模块前缀（eam_category）
+        module = parts[0]
+        candidate = f"{module}_{prefix}"
+        if candidate in all_tables:
+            return candidate
+
+    # 4. 全局后缀匹配 — 找所有以 _prefix 结尾的表，取最短的（最精确）
+    suffix = f"_{prefix}"
+    candidates = [t for t in all_tables if t.endswith(suffix)]
+    if len(candidates) == 1:
+        return candidates[0]
+    if len(candidates) > 1:
+        # 多个候选 — 优先同模块前缀，其次最短
+        if source_table and "_" in source_table:
+            module = source_table.split("_")[0]
+            same_module = [t for t in candidates if t.startswith(module + "_")]
+            if len(same_module) == 1:
+                return same_module[0]
+        return min(candidates, key=len)
+
+    # system_ 前缀特殊处理（若依系统表）
+    candidate = f"system_{prefix}"
+    if candidate in all_tables:
+        return candidate
+
     return None
 
 
@@ -109,7 +153,7 @@ def infer_relations(
         id_match = re.match(r"^(.+)_id$", col)
         if id_match:
             prefix = id_match.group(1)
-            target = _find_table_by_prefix(prefix, all_tables)
+            target = _find_table_by_prefix(prefix, all_tables, source_table)
             if target is not None and target != source_table:
                 target_columns = table_map[target].get("columns", set())
                 if "id" in target_columns:
@@ -131,7 +175,7 @@ def infer_relations(
         code_match = re.match(r"^(.+)_code$", col)
         if code_match:
             prefix = code_match.group(1)
-            target = _find_table_by_prefix(prefix, all_tables)
+            target = _find_table_by_prefix(prefix, all_tables, source_table)
             if target is not None and target != source_table:
                 target_columns = table_map[target].get("columns", set())
                 if "code" in target_columns:

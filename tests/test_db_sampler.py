@@ -60,10 +60,12 @@ def test_enum_detected():
     assert updated[0].enum_values is None
     assert not updated[0].is_enum_candidate
 
-    # status 应有 enum_values
+    # status 应有 enum_values（含置信度）
     assert updated[1].name == "status"
-    assert updated[1].enum_values == enum_vals
     assert updated[1].is_enum_candidate
+    assert len(updated[1].enum_values) == 3
+    assert updated[1].enum_values[0]["value"] == "ACTIVE"
+    assert "confidence" in updated[1].enum_values[0]
 
     # count_distinct 只对 status 调用一次
     dialect.count_distinct.assert_called_once_with(conn, "orders", "public", "status")
@@ -145,9 +147,9 @@ def test_input_columns_not_mutated():
     """scan_table_samples 不应修改原始 ColumnInfo 对象"""
     conn = MagicMock()
     enum_vals = [{"value": "A", "count": 10}]
-    dialect = _make_dialect(count_distinct_val=1, enum_values=enum_vals)
+    dialect = _make_dialect(count_distinct_val=3, enum_values=enum_vals)
 
-    col = _make_col("type_code", "varchar(1)", "string")
+    col = _make_col("status", "varchar(20)", "string")
     original_enum_values = col.enum_values  # None
 
     updated, _ = scan_table_samples(conn, dialect, "codes", "public", [col])
@@ -156,7 +158,9 @@ def test_input_columns_not_mutated():
     assert col.enum_values == original_enum_values
     # 返回的是新对象
     assert updated[0] is not col
-    assert updated[0].enum_values == enum_vals
+    assert len(updated[0].enum_values) == 1
+    assert updated[0].enum_values[0]["value"] == "A"
+    assert "confidence" in updated[0].enum_values[0]
 
 
 # ---------------------------------------------------------------------------

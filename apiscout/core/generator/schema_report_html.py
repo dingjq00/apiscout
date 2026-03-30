@@ -100,7 +100,80 @@ _INLINE_TEMPLATE = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 逐表详情 -->
+    <!-- ==================== 人工核查区 ==================== -->
+    <div class="relations-section" style="border-left:4px solid #f59e0b;">
+        <div class="section-title" style="color:#92400e;">&#9888; 需人工核查</div>
+        <p style="color:#64748b;font-size:13px;margin-bottom:16px;">以下内容由算法自动推断，可能不准确。请人工确认后再使用。</p>
+
+        <!-- 推断关系汇总 -->
+        {% if report.inferred_relations %}
+        <h2 style="margin-top:0;">推断关系（{{ report.inferred_relations | length }} 个）</h2>
+        {% for rel in report.inferred_relations %}
+        <div class="rel-item rel-inferred">
+            <span class="rel-src">{{ rel.source_table }}.{{ rel.source_column }}</span>
+            <span class="rel-arrow">→</span>
+            <span class="rel-tgt">{{ rel.target_table }}.{{ rel.target_column }}</span>
+            <span class="rel-confidence">{{ (rel.confidence * 100) | int }}%</span>
+            <span class="rel-evidence">{{ rel.evidence }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="no-data">无推断关系</p>
+        {% endif %}
+
+        <!-- 枚举候选汇总 -->
+        {% set all_enum_cols = [] %}
+        {% for table in report.tables %}
+            {% for col in table.columns %}
+                {% if col.is_enum_candidate %}
+                    {% set _ = all_enum_cols.append({"table": table.name, "col": col}) %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {% if all_enum_cols %}
+        <h2 style="margin-top:20px;">枚举候选（{{ all_enum_cols | length }} 个字段）</h2>
+        {% for item in all_enum_cols %}
+        {% set col = item.col %}
+        {% set confidence = col.enum_values[0].confidence if col.enum_values and col.enum_values[0].confidence is defined else "medium" %}
+        <div style="margin-bottom:8px;padding:4px 0;">
+            <code style="color:#64748b;font-size:12px;">{{ item.table }}.</code><code style="color:#1e40af;">{{ col.name }}</code>
+            {% if confidence == "high" %}
+            <span style="font-size:11px;color:#166534;background:#dcfce7;padding:1px 6px;border-radius:8px;">高</span>
+            {% elif confidence == "medium" %}
+            <span style="font-size:11px;color:#854d0e;background:#fef9c3;padding:1px 6px;border-radius:8px;">中</span>
+            {% else %}
+            <span style="font-size:11px;color:#9ca3af;background:#f3f4f6;padding:1px 6px;border-radius:8px;">低</span>
+            {% endif %}
+            ：
+            <span class="enum-tags" style="display:inline-flex;">
+            {% for ev in col.enum_values %}
+                <span class="enum-tag{% if confidence == 'low' %}" style="opacity:0.6{% endif %}">{{ ev.value }}<span class="count">{{ ev.count }}</span></span>
+            {% endfor %}
+            </span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="no-data" style="margin-top:20px;">无枚举候选</p>
+        {% endif %}
+    </div>
+
+    <!-- ==================== 显式外键（确定的） ==================== -->
+    {% if report.explicit_relations %}
+    <div class="relations-section">
+        <div class="section-title">显式外键（{{ report.explicit_relations | length }} 个，数据库约束）</div>
+        {% for rel in report.explicit_relations %}
+        <div class="rel-item">
+            <span class="rel-src">{{ rel.source_table }}.{{ rel.source_column }}</span>
+            <span class="rel-arrow">→</span>
+            <span class="rel-tgt">{{ rel.target_table }}.{{ rel.target_column }}</span>
+            <span class="rel-constraint">（{{ rel.constraint_name }}）</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ==================== 逐表详情 ==================== -->
     {% for table in report.tables %}
     <div class="table-card">
         <div class="table-header">
@@ -144,24 +217,6 @@ _INLINE_TEMPLATE = """<!DOCTYPE html>
             </tbody>
         </table>
 
-        <!-- 枚举候选值 -->
-        {% set enum_cols = table.columns | selectattr("is_enum_candidate") | list %}
-        {% if enum_cols %}
-        <div class="enum-section">
-            <h4>枚举候选值</h4>
-            {% for col in enum_cols %}
-            <div style="margin-bottom:8px;">
-                <code style="color:#1e40af;">{{ col.name }}</code> ：
-                <span class="enum-tags" style="display:inline-flex;">
-                {% for ev in col.enum_values %}
-                    <span class="enum-tag">{{ ev.value }}<span class="count">{{ ev.count }}</span></span>
-                {% endfor %}
-                </span>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <!-- 采样数据 -->
         {% if table.sample_rows %}
         <div class="sample-section">
@@ -181,40 +236,6 @@ _INLINE_TEMPLATE = """<!DOCTYPE html>
         {% endif %}
     </div>
     {% endfor %}
-
-    <!-- 关系图 -->
-    <div class="relations-section">
-        <div class="section-title">表间关系</div>
-
-        {% if report.explicit_relations %}
-        <h2>显式外键</h2>
-        {% for rel in report.explicit_relations %}
-        <div class="rel-item">
-            <span class="rel-src">{{ rel.source_table }}.{{ rel.source_column }}</span>
-            <span class="rel-arrow">→</span>
-            <span class="rel-tgt">{{ rel.target_table }}.{{ rel.target_column }}</span>
-            <span class="rel-constraint">（约束: {{ rel.constraint_name }}）</span>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="no-data">无显式外键</p>
-        {% endif %}
-
-        {% if report.inferred_relations %}
-        <h2 style="margin-top:16px;">推断关系</h2>
-        {% for rel in report.inferred_relations %}
-        <div class="rel-item rel-inferred">
-            <span class="rel-src">{{ rel.source_table }}.{{ rel.source_column }}</span>
-            <span class="rel-arrow">→</span>
-            <span class="rel-tgt">{{ rel.target_table }}.{{ rel.target_column }}</span>
-            <span class="rel-confidence">{{ (rel.confidence * 100) | int }}%</span>
-            <span class="rel-evidence">{{ rel.evidence }}</span>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="no-data" style="margin-top:16px;">无推断关系</p>
-        {% endif %}
-    </div>
 </div>
 </body>
 </html>"""

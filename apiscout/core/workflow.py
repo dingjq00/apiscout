@@ -137,6 +137,7 @@ def scan_db(
     conn_str: str = None,
     output_dir: str = None,
     enrich_spec: str = None,
+    exclude_patterns: list[str] | None = None,
     **conn_kwargs,
 ) -> dict:
     """扫描数据库 schema → 生成报告"""
@@ -149,10 +150,10 @@ def scan_db(
     # 扫描
     if conn_str:
         params = parse_connection_string(conn_str)
-        report = scan_database(conn_str)
+        report = scan_database(conn_str, exclude_patterns=exclude_patterns)
     else:
         params = conn_kwargs
-        report = scan_database(**conn_kwargs)
+        report = scan_database(exclude_patterns=exclude_patterns, **conn_kwargs)
 
     db_name = params.get("database", "unknown")
 
@@ -163,9 +164,15 @@ def scan_db(
     output_path.mkdir(parents=True, exist_ok=True)
 
     # 写 JSON
+    def _json_default(obj):
+        """处理不可序列化类型（memoryview/bytes/datetime 等）"""
+        if isinstance(obj, (memoryview, bytes)):
+            return f"<binary {len(obj)} bytes>"
+        return str(obj)
+
     json_path = output_path / "schema_report.json"
     with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(asdict(report), f, ensure_ascii=False, indent=2, default=str)
+        json.dump(asdict(report), f, ensure_ascii=False, indent=2, default=_json_default)
     logger.info("生成: schema_report.json (%d 张表)", report.total_tables)
 
     # 写 HTML

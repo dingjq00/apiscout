@@ -1,4 +1,5 @@
 """Schema 扫描编排 — 组合 connector + dialect + sampler + relations"""
+import fnmatch
 import logging
 from datetime import datetime, timezone
 
@@ -25,6 +26,7 @@ def scan_database(
     password: str | None = None,
     database: str | None = None,
     dialect: str | None = None,
+    exclude_patterns: list[str] | None = None,
 ) -> SchemaReport:
     """扫描数据库 Schema，返回完整的 SchemaReport。
 
@@ -77,6 +79,16 @@ def scan_database(
         # Step 3：获取所有表
         # -------------------------------------------------------------------
         raw_tables = dialect_instance.get_tables(conn)
+        # 排除匹配黑名单的表（fnmatch 通配符，如 act_*, qrtz_*）
+        if exclude_patterns:
+            before = len(raw_tables)
+            raw_tables = [
+                t for t in raw_tables
+                if not any(fnmatch.fnmatch(t["name"], pat) for pat in exclude_patterns)
+            ]
+            excluded = before - len(raw_tables)
+            if excluded:
+                logger.info("排除 %d 张表（匹配 --exclude 规则）", excluded)
         logger.info("发现 %d 张表", len(raw_tables))
 
         # -------------------------------------------------------------------
@@ -143,7 +155,8 @@ def scan_database(
 
             # ---- 5c. 枚举探测 + 采样 ----
             updated_columns, sample_rows = scan_table_samples(
-                conn, dialect_instance, tbl_name, tbl_schema, columns
+                conn, dialect_instance, tbl_name, tbl_schema, columns,
+                row_count=raw.get("row_count"),
             )
 
             # ---- 5d. 构建 TableInfo ----

@@ -388,13 +388,14 @@ def web(port):
 @click.option("--database", "-d", default=None, help="数据库名")
 @click.option("--dialect", type=click.Choice(["postgresql", "mysql", "oracle", "mssql"]), default=None, help="数据库类型")
 @click.option("--enrich", default=None, help="已有 OpenAPI spec 路径（交叉增强）")
-def db(conn_str, host, port, user, password, database, dialect, enrich):
+@click.option("--exclude", "-x", multiple=True, help="排除表名（通配符，如 act_* qrtz_*，可多次使用）")
+def db(conn_str, host, port, user, password, database, dialect, enrich, exclude):
     """扫描数据库 schema，生成结构报告
 
     \b
     示例：
       apiscout db "postgresql://readonly:pass@192.168.1.100:5432/eam"
-      apiscout db --host 10.0.0.1 --port 5432 -u readonly -p pass -d eam --dialect postgresql
+      apiscout db "postgresql://..." -x "act_*" -x "qrtz_*" -x "platform_*"
       apiscout db "postgresql://..." --enrich output/eam/openapi.yaml
     """
     from apiscout.core.workflow import scan_db
@@ -403,15 +404,20 @@ def db(conn_str, host, port, user, password, database, dialect, enrich):
         click.echo("请提供连接字符串或 --host 参数")
         return
 
+    exclude_patterns = list(exclude) if exclude else None
+
     click.echo(f"APIScout v{__version__} — 数据库 Schema 扫描")
+    if exclude_patterns:
+        click.echo(f"排除: {', '.join(exclude_patterns)}")
 
     try:
         if conn_str:
-            result = scan_db(conn_str=conn_str, enrich_spec=enrich)
+            result = scan_db(conn_str=conn_str, enrich_spec=enrich, exclude_patterns=exclude_patterns)
         else:
             result = scan_db(
                 host=host, port=port, user=user, password=password,
                 database=database, dialect=dialect, enrich_spec=enrich,
+                exclude_patterns=exclude_patterns,
             )
     except ImportError as e:
         click.echo(f"缺少数据库驱动: {e}")

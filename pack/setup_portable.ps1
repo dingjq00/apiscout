@@ -89,8 +89,10 @@ echo.
 echo 用法:
 echo   apiscout scan URL              自动+手动扫描
 echo   apiscout scan URL --manual     纯手动扫描
+echo   apiscout import FILE_OR_URL    导入 Swagger/OpenAPI
+echo   apiscout db CONN_STR           扫描数据库 schema
+echo   apiscout analyze FILE          分析捕获数据
 echo   apiscout web                   Web 面板
-echo   apiscout analyze FILE          分析数据
 echo.
 cmd /k
 "@
