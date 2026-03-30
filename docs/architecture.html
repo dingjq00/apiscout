@@ -48,7 +48,7 @@
 
 <p>APIScout 是 <strong>insight68</strong> 客户实施的核心工具。insight68 需要对接客户的各种企业系统（EAM/MES/ERP），但每个客户的系统技术栈不同、有没有 API 文档也不确定。APIScout 解决的是"快速摸清客户系统有哪些 API"这个问题。</p>
 
-<h2>2. 六条发现路径</h2>
+<h2>2. 七条发现路径</h2>
 
 <p>APIScout 不绑定任何一种技术方案。给什么条件，走什么路径：</p>
 
@@ -58,8 +58,9 @@
 <tr><td>2</td><td>系统有在线 Swagger 端点</td><td>URL（自动探测）</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
 <tr><td>3</td><td>框架 metadata（Jmix 等）</td><td>适配器自动探测</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
 <tr><td>4</td><td>HTTP 抓包（浏览器录制）</td><td>用户操作系统</td><td>OpenAPI + Swagger UI</td><td><span class="tag tag-done">已实现</span></td></tr>
-<tr><td>5</td><td>数据库 schema 扫描</td><td>DB 连接</td><td>SQL 模板集</td><td><span class="tag tag-plan">V1.1</span></td></tr>
-<tr><td>6</td><td>系统文档 + schema + AI</td><td>文档 + DB</td><td>AI 增强 SQL 模板</td><td><span class="tag tag-plan">V2</span></td></tr>
+<tr><td>5</td><td>数据库 schema 扫描</td><td>DB 连接字符串</td><td>Schema 报告（交互式 HTML）+ 交叉增强 spec</td><td><span class="tag tag-done">已实现</span></td></tr>
+<tr><td>6</td><td>源码分析</td><td>项目源码</td><td>AI 直接读源码生成 spec</td><td><span class="tag tag-plan">规划中</span></td></tr>
+<tr><td>7</td><td>系统文档 + schema + AI</td><td>文档 + DB</td><td>AI 增强 SQL 模板</td><td><span class="tag tag-plan">V2</span></td></tr>
 </table>
 
 <h2>3. 系统架构</h2>
@@ -69,7 +70,7 @@
 │                        用户界面层                            │
 │  ┌──────────┐  ┌──────────────────────┐  ┌──────────────┐  │
 │  │  CLI     │  │  Web 面板            │  │  (未来)      │  │
-│  │  5 命令  │  │  FastAPI + WebSocket │  │  桌面端      │  │
+│  │  6 命令  │  │  FastAPI + WebSocket │  │  桌面端      │  │
 │  └────┬─────┘  └──────────┬───────────┘  └──────────────┘  │
 └───────┼──────────────────┼──────────────────────────────────┘
         │                  │
@@ -78,12 +79,11 @@
 │                                                              │
 │  每种技术栈一个适配器，@register 注册，自动检测 + 策略分发      │
 │                                                              │
-│  ┌─────────┐  ┌──────────────┐  ┌────────┐  ┌───────────┐  │
-│  │  Jmix   │  │  Spring Boot │  │  若依  │  │ database  │  │
-│  │metadata │  │  /v3/api-docs│  │swagger │  │  schema   │  │
-│  │→ spec   │  │  → spec      │  │→ spec  │  │ → SQL模板 │  │
-│  └─────────┘  └──────────────┘  └────────┘  └───────────┘  │
-│      已实现         已实现          已实现       V1.1 规划    │
+│  ┌─────────┐  ┌──────────────┐  ┌────────┐                 │
+│  │  Jmix   │  │  Spring Boot │  │  若依  │                 │
+│  │metadata │  │  /v3/api-docs│  │swagger │                 │
+│  │→ spec   │  │  → spec      │  │→ spec  │                 │
+│  └─────────┘  └──────────────┘  └────────┘                 │
 └──────────────────────────┬──────────────────────────────────┘
                            │
 ┌──────────────────────────┴──────────────────────────────────┐
@@ -96,18 +96,25 @@
 │  │  · api_prober│ │  · filter    │  │  · schema 推断    │  │
 │  │  · links    │  │  · store     │  │  · auth 认证      │  │
 │  │  · js分析   │  │  (JSONL)     │  │  · dedup 聚合     │  │
-│  │  · scroll   │  │              │  │                   │  │
+│  │  · scroll   │  │              │  │  · schema增强(新) │  │
 │  └─────────────┘  └──────────────┘  └───────────────────┘  │
 │                                                              │
-│  ┌──────────────────────────────┐  ┌────────────────────┐  │
-│  │  generator/ 输出生成          │  │  workflow.py       │  │
-│  │  · openapi.py    YAML spec   │  │  工作流编排         │  │
-│  │  · swagger_ui.py HTML 文档   │  │  analyze → generate│  │
-│  │  · auth_profile  认证档案    │  │                    │  │
-│  │  · report.py     覆盖率报告  │  │                    │  │
-│  │  · jmix_spec.py  Jmix 生成  │  │                    │  │
-│  │  · ai_enricher   AI 增强    │  │                    │  │
-│  └──────────────────────────────┘  └────────────────────┘  │
+│  ┌──────────────────┐  ┌────────────────────────────────┐  │
+│  │ db_scanner/ (新) │  │  generator/ 输出生成            │  │
+│  │ 数据库schema扫描 │  │  · openapi.py    YAML spec     │  │
+│  │ · connector 连接 │  │  · swagger_ui.py HTML 文档     │  │
+│  │ · introspector   │  │  · schema_report 交互审核(新)  │  │
+│  │ · sampler 枚举   │  │  · auth_profile  认证档案      │  │
+│  │ · relations 推断 │  │  · report.py     覆盖率报告    │  │
+│  │ · dialect/ 4方言 │  │  · jmix_spec.py  Jmix 生成    │  │
+│  │  PG/MySQL/       │  │  · ai_enricher   AI 增强      │  │
+│  │  Oracle/MSSQL    │  │                                │  │
+│  └──────────────────┘  └────────────────────────────────┘  │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  workflow.py — 工作流编排                                │ │
+│  │  analyze → generate / scan_db → schema_report          │ │
+│  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 </pre>
 
@@ -147,6 +154,26 @@
 </div>
 </div>
 
+<div class="grid">
+<div class="card">
+  <div class="card-title">db_scanner/ 数据库扫描 <span class="tag tag-done">V1.1 新增</span></div>
+  <p><code>connector.py</code> — 连接管理 + 方言自动检测（连接字符串 → 方言实例）</p>
+  <p><code>introspector.py</code> — 扫描编排（表 → 列 → 索引 → 外键 → 枚举探测 → 关系推断）</p>
+  <p><code>sampler.py</code> — 枚举探测（双门槛 + 置信度分级 high/medium/low）+ 随机采样</p>
+  <p><code>relations.py</code> — 关系推断（xxx_id → xxx.id + 同模块匹配 + 用户表特殊处理）</p>
+  <p><code>dialect/</code> — 4 种方言：PostgreSQL / MySQL / Oracle / SQL Server</p>
+</div>
+
+<div class="card">
+  <div class="card-title">交互式审核报告 <span class="tag tag-done">V1.2 新增</span></div>
+  <p><code>schema_report_html.py</code> — 单文件自包含 HTML（数据 + JS 交互全部内嵌）</p>
+  <p>推断关系/枚举候选支持 ✓/✗ 审核 + 目标表修改 + 枚举值增删</p>
+  <p>按表分组折叠 + 搜索框 + 状态筛选 + 进度条</p>
+  <p>导出/导入审核结果 JSON — 发给客户审核，客户发回 JSON</p>
+  <p><code>schema_enricher.py</code> — 用 DB schema 交叉增强 OpenAPI spec</p>
+</div>
+</div>
+
 <h2>5. 数据流</h2>
 
 <div style="max-width:400px; margin: 0 auto;">
@@ -168,8 +195,8 @@
 <tr><td>有 REST API</td><td>OpenAPI spec</td><td>rest_api（调 API）</td></tr>
 <tr><td>有 Swagger 文件</td><td>导入 → OpenAPI spec</td><td>rest_api</td></tr>
 <tr><td>有框架 metadata</td><td>适配器 → OpenAPI spec</td><td>rest_api</td></tr>
-<tr><td>只有数据库（V1.1）</td><td>SQL 模板集</td><td>db_query（查 DB）</td></tr>
-<tr><td>有数据库 + 文档（V2）</td><td>AI 增强 SQL 模板</td><td>db_query</td></tr>
+<tr><td>有数据库</td><td>Schema 报告 + 交叉增强 spec</td><td>rest_api（更精确）</td></tr>
+<tr><td>只有数据库（V2）</td><td>Schema + 文档 → SQL 模板集</td><td>db_query（查 DB）</td></tr>
 </table>
 
 <div class="highlight">
@@ -202,14 +229,26 @@
 </div>
 </div>
 
+<div class="grid-3" style="margin-top:16px;">
+<div class="card" style="grid-column: 1 / -1;">
+  <div class="card-title">eamNewGe DB 扫描 <span class="tag tag-done">V1.1</span></div>
+  <p>技术栈：若依 + PostgreSQL</p>
+  <p>发现方式：DB schema 扫描（<code>apiscout db</code>）</p>
+  <p>结果：<strong>185 表 / 3240 列 / 92 外键 / 795 推断关系</strong></p>
+  <p>枚举检测：置信度分级（参考 ydata-profiling 双门槛）</p>
+  <p>输出：交互式审核 HTML（分组折叠 + 搜索 + 导入导出）</p>
+</div>
+</div>
+
 <h2>8. 技术数据</h2>
 
 <table>
-<tr><td>代码量</td><td>36 模块，~6000 行（含测试）</td></tr>
-<tr><td>测试</td><td>119 个，100% 通过</td></tr>
-<tr><td>依赖</td><td>Playwright, genson, PyYAML, Jinja2, Click, FastAPI</td></tr>
+<tr><td>代码量</td><td>50+ 模块，~10000 行（含测试）</td></tr>
+<tr><td>测试</td><td>197 个，100% 通过</td></tr>
+<tr><td>依赖</td><td>Playwright, genson, PyYAML, Jinja2, Click, FastAPI, psycopg2(按需)</td></tr>
+<tr><td>数据库支持</td><td>PostgreSQL / MySQL / Oracle / SQL Server</td></tr>
 <tr><td>Python</td><td>3.11+</td></tr>
-<tr><td>便携包</td><td>226MB（含 Python + Chromium，Windows 离线安装）</td></tr>
+<tr><td>便携包</td><td>在线安装包 564KB / 离线包 226MB</td></tr>
 </table>
 
 </div>

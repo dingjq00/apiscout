@@ -435,7 +435,7 @@ def db(conn_str, host, port, user, password, database, dialect, enrich, exclude)
     click.echo(f"  字段: {report.total_columns}")
     click.echo(f"  外键: {report.total_foreign_keys}")
     click.echo(f"  推断关系: {report.total_inferred_relations}")
-    click.echo(f"  枚举候选: {report.enum_candidates}")
+    click.echo(f"  枚举候选: {len(report.enum_candidates)}")
     click.echo()
     click.echo(f"输出: {result['output_dir']}")
 

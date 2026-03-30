@@ -251,7 +251,54 @@
 <tr><td><code>apiscout import FILE</code></td><td>导入 Swagger</td><td><code>apiscout import swagger.json</code></td></tr>
 <tr><td><code>apiscout analyze FILE</code></td><td>分析数据</td><td><code>apiscout analyze capture.jsonl</code></td></tr>
 <tr><td><code>apiscout enrich DIR</code></td><td>AI 增强</td><td><code>apiscout enrich output/ --api-key KEY</code></td></tr>
+<tr><td><code>apiscout db CONN</code></td><td>数据库 schema 扫描</td><td><code>apiscout db "postgresql://user:pass@host/db"</code></td></tr>
 </table>
+
+<h2>5.5 数据库扫描详解</h2>
+
+<h3>基本用法</h3>
+<pre>
+<span class="prompt">$</span> apiscout db "postgresql://readonly:pass@192.168.1.100:5432/eam"
+</pre>
+<p>自动连接数据库，扫描所有表的结构、枚举值、关系，输出到 <code>output/eam/</code>。</p>
+
+<h3>排除框架表（推荐）</h3>
+<pre>
+<span class="prompt">$</span> apiscout db "postgresql://..." -x "act_*" -x "qrtz_*" -x "platform_*"
+</pre>
+<p>若依/Spring 系统通常有大量框架表（工作流、调度、平台快照），用 <code>-x</code> 排除。</p>
+
+<h3>交叉增强已有 OpenAPI spec</h3>
+<pre>
+<span class="prompt">$</span> apiscout db "postgresql://..." --enrich output/eam/openapi.yaml
+</pre>
+<p>用 DB 的精确类型、注释、枚举值增强已有的 API 文档。</p>
+
+<h3>支持的数据库</h3>
+<table>
+<tr><th>数据库</th><th>驱动</th><th>安装</th></tr>
+<tr><td>PostgreSQL</td><td>psycopg2-binary</td><td><code>pip install apiscout[postgresql]</code></td></tr>
+<tr><td>MySQL</td><td>mysql-connector-python</td><td><code>pip install apiscout[mysql]</code></td></tr>
+<tr><td>Oracle</td><td>oracledb</td><td><code>pip install apiscout[oracle]</code></td></tr>
+<tr><td>SQL Server</td><td>pymssql</td><td><code>pip install apiscout[mssql]</code></td></tr>
+</table>
+
+<h3>输出文件</h3>
+<table>
+<tr><th>文件</th><th>说明</th></tr>
+<tr><td><strong>schema_report.html</strong></td><td>交互式审核报告 — 可直接发给客户，浏览器打开做 ✓/✗ 审核</td></tr>
+<tr><td>schema_report.json</td><td>原始扫描数据（机器可读）</td></tr>
+<tr><td>*_review_*.json</td><td>审核结果（客户导出后发回）</td></tr>
+</table>
+
+<h3>审核流程</h3>
+<div class="card">
+<p>① 实施人员运行 <code>apiscout db</code> → 生成 schema_report.html</p>
+<p>② 邮件/微信发给客户</p>
+<p>③ 客户浏览器打开 → 对推断关系和枚举做 ✓/✗ 确认</p>
+<p>④ 点"导出审核结果" → 得到 JSON 文件</p>
+<p>⑤ 发回给实施人员 → 后续 AI 增强 / insight68 对接</p>
+</div>
 
 <h2>六、常见问题</h2>
 
