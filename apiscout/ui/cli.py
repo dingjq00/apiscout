@@ -377,3 +377,65 @@ def web(port):
     """
     from apiscout.web.app import start_server
     start_server(port=port)
+
+
+@main.command()
+@click.argument("conn_str", required=False)
+@click.option("--host", default=None, help="数据库主机")
+@click.option("--port", type=int, default=None, help="端口")
+@click.option("--user", "-u", default=None, help="用户名")
+@click.option("--password", "-p", default=None, help="密码")
+@click.option("--database", "-d", default=None, help="数据库名")
+@click.option("--dialect", type=click.Choice(["postgresql", "mysql", "oracle", "mssql"]), default=None, help="数据库类型")
+@click.option("--enrich", default=None, help="已有 OpenAPI spec 路径（交叉增强）")
+def db(conn_str, host, port, user, password, database, dialect, enrich):
+    """扫描数据库 schema，生成结构报告
+
+    \b
+    示例：
+      apiscout db "postgresql://readonly:pass@192.168.1.100:5432/eam"
+      apiscout db --host 10.0.0.1 --port 5432 -u readonly -p pass -d eam --dialect postgresql
+      apiscout db "postgresql://..." --enrich output/eam/openapi.yaml
+    """
+    from apiscout.core.workflow import scan_db
+
+    if not conn_str and not host:
+        click.echo("请提供连接字符串或 --host 参数")
+        return
+
+    click.echo(f"APIScout v{__version__} — 数据库 Schema 扫描")
+
+    try:
+        if conn_str:
+            result = scan_db(conn_str=conn_str, enrich_spec=enrich)
+        else:
+            result = scan_db(
+                host=host, port=port, user=user, password=password,
+                database=database, dialect=dialect, enrich_spec=enrich,
+            )
+    except ImportError as e:
+        click.echo(f"缺少数据库驱动: {e}")
+        click.echo("请安装对应驱动: pip install apiscout[postgresql]")
+        return
+    except Exception as e:
+        click.echo(f"扫描失败: {e}")
+        logger.exception("DB scan error")
+        return
+
+    report = result["report"]
+    click.echo()
+    click.echo(f"扫描完成:")
+    click.echo(f"  表: {report.total_tables}")
+    click.echo(f"  字段: {report.total_columns}")
+    click.echo(f"  外键: {report.total_foreign_keys}")
+    click.echo(f"  推断关系: {report.total_inferred_relations}")
+    click.echo(f"  枚举候选: {report.enum_candidates}")
+    click.echo()
+    click.echo(f"输出: {result['output_dir']}")
+
+    # 自动打开报告
+    from pathlib import Path
+    html_path = Path(result["output_dir"]) / "schema_report.html"
+    if html_path.exists():
+        import webbrowser
+        webbrowser.open(f"file://{html_path.resolve()}")

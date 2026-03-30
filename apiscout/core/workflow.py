@@ -131,3 +131,54 @@ def generate_outputs(
         "output_dir": str(output_path),
         "files": ["draft_spec.yaml", "auth_profile.yaml", "report.html", "meta.yaml"],
     }
+
+
+def scan_db(
+    conn_str: str = None,
+    output_dir: str = None,
+    enrich_spec: str = None,
+    **conn_kwargs,
+) -> dict:
+    """扫描数据库 schema → 生成报告"""
+    import json
+    from dataclasses import asdict
+    from apiscout.core.db_scanner.introspector import scan_database
+    from apiscout.core.db_scanner.connector import parse_connection_string
+    from apiscout.core.generator.schema_report_html import write_schema_report_html
+
+    # 扫描
+    if conn_str:
+        params = parse_connection_string(conn_str)
+        report = scan_database(conn_str)
+    else:
+        params = conn_kwargs
+        report = scan_database(**conn_kwargs)
+
+    db_name = params.get("database", "unknown")
+
+    # 输出目录
+    if not output_dir:
+        output_dir = f"./output/{db_name}"
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # 写 JSON
+    json_path = output_path / "schema_report.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(asdict(report), f, ensure_ascii=False, indent=2, default=str)
+    logger.info("生成: schema_report.json (%d 张表)", report.total_tables)
+
+    # 写 HTML
+    write_schema_report_html(report, str(output_path / "schema_report.html"))
+    logger.info("生成: schema_report.html")
+
+    # 交叉增强（可选）
+    if enrich_spec:
+        from apiscout.core.analyzer.schema_enricher import enrich_openapi_with_schema
+        enriched = enrich_openapi_with_schema(enrich_spec, report)
+        enriched_path = output_path / "enriched_spec.yaml"
+        with open(enriched_path, "w", encoding="utf-8") as f:
+            yaml.dump(enriched, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        logger.info("生成: enriched_spec.yaml（交叉增强）")
+
+    return {"output_dir": str(output_path), "report": report}
