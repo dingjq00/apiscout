@@ -12,8 +12,8 @@ APIScout — 客户系统接入方案生成器。
 1. **有 API 的系统**：录制操作 → 自动生成 OpenAPI spec → 转为 insight68 MCP Tool
 2. **有 Swagger 的系统**：直接导入 → 生成文档
 3. **有框架 metadata 的系统**（Jmix/Spring Boot）：适配器自动生成 spec
-4. **只有数据库的系统**（V1.1）：扫描 schema + 系统文档 → AI 生成 SQL 模板 → 转为 MCP Tool
-5. **U 盘便携部署**：Windows 离线安装，双击即用
+4. **有数据库的系统**（V1.1）：扫描 schema → 报告（表结构 + 枚举 + 关系）→ 交叉增强 OpenAPI
+5. **U 盘便携部署**：Windows 在线安装包 564KB，双击即用
 
 ## 设计文档
 
@@ -38,6 +38,7 @@ APIScout — 客户系统接入方案生成器。
 - PyYAML — YAML 读写
 - Jinja2 — HTML 报告模板
 - Click — CLI 框架
+- psycopg2 / mysql-connector / oracledb / pymssql — 数据库驱动（按需安装）
 - PyInstaller — 打包为独立可执行文件
 
 ## 项目结构
@@ -64,28 +65,44 @@ apiscout/
 │   │   ├── schema_engine.py #   genson 多次合并 + format/enum 检测
 │   │   ├── router.py        #   路径参数化归并 + 保留词排除
 │   │   ├── auth_detector.py #   认证检测（JWT/Basic/API Key/金蝶/用友）
-│   │   └── dedup.py         #   端点聚合 + query 参数推断
+│   │   ├── dedup.py         #   端点聚合 + query 参数推断
+│   │   └── schema_enricher.py # 用 DB schema 增强 OpenAPI spec（V1.1）
+│   ├── db_scanner/          # 数据库 Schema 扫描（V1.1）
+│   │   ├── models.py        #   数据模型（ColumnInfo/TableInfo/SchemaReport）
+│   │   ├── connector.py     #   连接管理 + 方言自动检测
+│   │   ├── introspector.py  #   扫描编排（组合所有模块）
+│   │   ├── sampler.py       #   枚举探测（置信度分级）+ 随机采样
+│   │   ├── relations.py     #   关系推断（命名模式匹配）
+│   │   └── dialect/         #   方言 SQL
+│   │       ├── base.py      #     BaseDialect 接口 + 类型归一化
+│   │       ├── postgresql.py#     PostgreSQL（information_schema + pg_stat）
+│   │       ├── mysql.py     #     MySQL
+│   │       ├── oracle.py    #     Oracle（ALL_TAB_COLUMNS）
+│   │       └── mssql.py     #     SQL Server
 │   ├── generator/           # 输出生成
 │   │   ├── openapi.py       #   OpenAPI 3.1 YAML
 │   │   ├── jmix_spec.py     #   Jmix metadata → 完整 CRUD spec
 │   │   ├── swagger_ui.py    #   Swagger UI 单文件 HTML
 │   │   ├── auth_profile.py  #   认证档案（含登录流追踪）
 │   │   ├── report.py        #   HTML 覆盖率报告
+│   │   ├── schema_report_html.py # DB Schema HTML 报告（V1.1）
 │   │   └── ai_enricher.py   #   AI 增强（DeepSeek/OpenAI）
 │   ├── config.py            # 配置加载
 │   └── workflow.py          # 工作流编排
 ├── ui/
-│   └── cli.py               # CLI（scan/import/analyze/enrich/web）
+│   └── cli.py               # CLI（scan/import/analyze/enrich/web/db）
 ├── web/
 │   └── app.py               # Web 面板（FastAPI + WebSocket）
 ├── config/
 │   └── default.yaml         # 默认配置
-├── tests/                   # 119 个测试
+├── tests/                   # 197 个测试
 ├── scripts/                 # 集成测试 + 调试工具
 └── pack/                    # 部署打包
     ├── portable/            #   Windows 离线便携包（229MB）
+    ├── 一键安装.bat          #   在线安装入口
+    ├── setup_portable.ps1   #   PowerShell 在线安装脚本
+    ├── build_online_pack.sh #   构建在线安装 zip（564KB）
     ├── install_windows.bat  #   有 Python 时一键安装
-    ├── setup_portable.ps1   #   无 Python 时在线安装
     └── run.bat              #   启动脚本
 ```
 
@@ -98,8 +115,8 @@ APIScout 输出 → insight68 MCP Tool 输入：
 | 有 REST API | OpenAPI spec | rest_api（调 API） |
 | 有 Swagger 文件 | 导入 → OpenAPI spec | rest_api |
 | 有框架 metadata | 适配器 → OpenAPI spec | rest_api |
-| 只有数据库（V1.1） | SQL 模板集 | db_query（查 DB） |
-| 有数据库+文档（V2） | AI 增强 SQL 模板 | db_query |
+| 有数据库 | Schema 报告 + 交叉增强 spec | rest_api（更精确）|
+| 只有数据库（V2） | Schema + 文档 → SQL 模板集 | db_query（查 DB） |
 
 ## 开发规范
 
@@ -118,6 +135,8 @@ APIScout 输出 → insight68 MCP Tool 输入：
 - **analyzer 只推断不关心数据来源**：可以吃 JSONL，也可以吃 HAR
 - **手动模式优先**：自动探索是锦上添花，录制+分析是核心
 - **V1 聚焦 REST + JSON**：其他协议标记发现但不解析
+- **枚举检测不追求完美**：置信度分级（high/medium/low），交给人/AI 最终判断
+- **db_scanner/ 跟 crawler/ 平级**：可独立使用，也可交叉增强
 
 ### 安全
 - 不在代码中硬编码密钥
@@ -144,6 +163,11 @@ apiscout import https://target-system.com/v3/api-docs
 # 分析已有数据
 apiscout analyze output/target/capture.jsonl -o output/target
 
+# 数据库 Schema 扫描（V1.1）
+apiscout db "postgresql://user:pass@host:5432/dbname"
+apiscout db "postgresql://..." -x "act_*" -x "qrtz_*"    # 排除框架表
+apiscout db "postgresql://..." --enrich output/target/openapi.yaml  # 交叉增强
+
 # AI 增强
 apiscout enrich output/target --api-key $DEEPSEEK_API_KEY
 
@@ -151,7 +175,7 @@ apiscout enrich output/target --api-key $DEEPSEEK_API_KEY
 pytest tests/ -v
 
 # 测试系统
-# eamNge: /Users/dingjq/IdeaProjects/eamNge (Spring Boot)
+# eamNewGe: /Users/dingjq/IdeaProjects/eamNewGe (若依+Vue，PG: postgres:postgres@localhost:5432/eam_db)
 # momExecution: /Users/dingjq/IdeaProjects/momExcetion (Jmix+Vaadin)
 # gtshebei: https://www.gtshebei.com (Vue SPA)
 ```
