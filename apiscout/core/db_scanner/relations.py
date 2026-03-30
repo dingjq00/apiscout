@@ -13,9 +13,12 @@ _AUDIT_COLUMNS = {
 
 # 用户表候选名（按优先级排列）
 _USER_TABLE_CANDIDATES = [
-    "sys_user", "user", "users", "sys_users",
-    "t_user", "t_users", "admin_user", "uc_user", "auth_user",
+    "sys_user", "system_users", "system_user", "user", "users",
+    "sys_users", "t_user", "t_users", "admin_user", "uc_user", "auth_user",
 ]
+
+# user_id 也视为指向用户表的字段
+_USER_ID_COLUMNS = {"user_id", "operator_id", "assignee_id"}
 
 # 框架前缀（用于 _find_table_by_prefix 补全查找）
 _TABLE_PREFIXES = ["t_", "sys_", "tb_"]
@@ -66,6 +69,18 @@ def _find_table_by_prefix(
         candidate = f"{module}_{prefix}"
         if candidate in all_tables:
             return candidate
+
+    # 3.5 复数形式（user → users）
+    plural = prefix + "s"
+    if plural in all_tables:
+        return plural
+    for fp in _TABLE_PREFIXES:
+        if fp + plural in all_tables:
+            return fp + plural
+    if source_table and "_" in source_table:
+        module = source_table.split("_")[0]
+        if f"{module}_{plural}" in all_tables:
+            return f"{module}_{plural}"
 
     # 4. 全局后缀匹配 — 找所有以 _prefix 结尾的表，取最短的（最精确）
     suffix = f"_{prefix}"
@@ -146,6 +161,26 @@ def infer_relations(
                     results.append(rel)
                     logger.debug("推断审计关系：%s.%s → %s.id", source_table, col, user_table)
             continue  # 审计字段不再走 _id/_code 规则
+
+        # ----------------------------------------------------------------
+        # 规则 2.5：user_id 等指向用户表（置信度 0.85）
+        # 单独处理，避免后缀匹配到 system_social_user 等错误表
+        # ----------------------------------------------------------------
+        if col in _USER_ID_COLUMNS:
+            user_table = _find_user_table(all_tables)
+            if user_table is not None:
+                user_columns = table_map[user_table].get("columns", set())
+                if "id" in user_columns:
+                    rel = InferredRelation(
+                        source_table=source_table,
+                        source_column=col,
+                        target_table=user_table,
+                        target_column="id",
+                        confidence=0.85,
+                        evidence=f"用户字段 {col} → {user_table}.id",
+                    )
+                    results.append(rel)
+            continue
 
         # ----------------------------------------------------------------
         # 规则 3：xxx_id → xxx.id（置信度 0.9）
