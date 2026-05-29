@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APIScout 同事使用手册</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif; background: #f1f5f9; color: #1e293b; line-height: 1.75; }
+
+  /* 封面 */
+  .hero { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #fff; padding: 56px 24px 48px; }
+  .hero-inner { max-width: 960px; margin: 0 auto; }
+  .hero h1 { font-size: 38px; font-weight: 800; letter-spacing: -0.5px; }
+  .hero .tagline { font-size: 19px; opacity: 0.92; margin-top: 10px; font-weight: 500; }
+  .hero .meta { margin-top: 22px; font-size: 14px; opacity: 0.8; display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero .meta b { opacity: 1; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* 目录 */
+  .toc { background: #fff; border-radius: 12px; padding: 24px 28px; margin: -28px 0 40px; box-shadow: 0 4px 20px rgba(30,58,138,0.10); position: relative; }
+  .toc h2 { font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; border: none; padding: 0; }
+  .toc ol { list-style: none; counter-reset: toc; columns: 2; column-gap: 32px; }
+  .toc li { counter-increment: toc; margin: 7px 0; }
+  .toc li a { color: #1e40af; text-decoration: none; font-size: 15px; }
+  .toc li a::before { content: counter(toc) ". "; color: #94a3b8; font-weight: 700; }
+  .toc li a:hover { text-decoration: underline; }
+
+  h2 { font-size: 24px; color: #0f172a; margin: 56px 0 18px; padding-bottom: 10px; border-bottom: 2px solid #dbeafe; scroll-margin-top: 16px; }
+  h2 .num { color: #2563eb; font-weight: 800; margin-right: 10px; }
+  h3 { font-size: 18px; color: #334155; margin: 28px 0 12px; }
+  p { margin: 12px 0; color: #475569; }
+  ul, ol { margin: 12px 0 12px 24px; color: #475569; }
+  li { margin: 6px 0; }
+  strong { color: #1e293b; }
+  a { color: #2563eb; }
+
+  code { background: #eef2ff; padding: 2px 7px; border-radius: 5px; font-size: 13.5px; color: #be185d; font-family: "SF Mono", Consolas, monospace; }
+
+  .terminal { background: #0f172a; color: #e2e8f0; padding: 20px 22px; border-radius: 10px; font-family: "SF Mono", Consolas, monospace; font-size: 13.5px; line-height: 1.9; margin: 16px 0; overflow-x: auto; }
+  .terminal .prompt { color: #a78bfa; user-select: none; }
+  .terminal .cmd { color: #4ade80; }
+  .terminal .output { color: #94a3b8; }
+  .terminal .comment { color: #64748b; }
+
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px 26px; margin: 18px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .card h3 { margin-top: 0; }
+
+  /* 步骤 */
+  .step { display: flex; gap: 18px; margin: 22px 0; align-items: flex-start; }
+  .step-num { background: #2563eb; color: #fff; min-width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .step-content { flex: 1; }
+  .step-content .t { font-weight: 700; font-size: 16px; color: #0f172a; }
+  .step-content p { margin: 6px 0; }
+
+  /* 提示框 */
+  .box { border-left: 4px solid; padding: 14px 20px; border-radius: 0 8px 8px 0; margin: 18px 0; }
+  .box .label { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  .tip { background: #eff6ff; border-color: #2563eb; }
+  .tip .label { color: #1d4ed8; }
+  .warn { background: #fffbeb; border-color: #f59e0b; }
+  .warn .label { color: #b45309; }
+  .danger { background: #fef2f2; border-color: #ef4444; }
+  .danger .label { color: #b91c1c; }
+  .ok { background: #f0fdf4; border-color: #22c55e; }
+  .ok .label { color: #15803d; }
+
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  th { background: #1e40af; color: #fff; padding: 11px 15px; text-align: left; font-size: 13px; }
+  td { padding: 11px 15px; border-bottom: 1px solid #eef2f6; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  td code { white-space: nowrap; }
+
+  .pill { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; }
+
+  footer { text-align: center; color: #94a3b8; font-size: 13px; margin-top: 60px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+
+  @media (max-width: 720px) {
+    .toc ol { columns: 1; }
+    .hero h1 { font-size: 30px; }
+  }
+  @media print {
+    body { background: #fff; }
+    .hero { background: #1e3a8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .toc { box-shadow: none; border: 1px solid #e2e8f0; }
+    h2 { page-break-after: avoid; }
+    .card, .step, table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>APIScout 使用手册</h1>
+    <div class="tagline">给我一个 URL（或数据库），还你一份完整的系统接入方案。</div>
+    <div class="meta">
+      <span><b>适用对象</b>：负责客户系统接入实施的同事</span>
+      <span><b>版本</b>：V1.2</span>
+      <span><b>无需编程基础也能用</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#what">这工具帮你做什么</a></li>
+      <li><a href="#install">安装（三种场景）</a></li>
+      <li><a href="#start">启动系统</a></li>
+      <li><a href="#flow">核心流程：录制式抓 API</a></li>
+      <li><a href="#cli">命令行速查</a></li>
+      <li><a href="#db">数据库扫描</a></li>
+      <li><a href="#output">看懂输出产物</a></li>
+      <li><a href="#best">实施最佳实践</a></li>
+      <li><a href="#faq">常见问题排错</a></li>
+      <li><a href="#security">安全红线（必读）</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <h2 id="what"><span class="num">1</span>这工具帮你做什么</h2>
+  <p>一句话：<strong>不管客户系统是什么技术栈、有没有 API 文档，APIScout 都能帮你快速产出一份接入方案。</strong>客户给什么，你用对应的玩法：</p>
+  <table>
+    <tr><th>客户系统的情况</th><th>你怎么做</th><th>产出</th></tr>
+    <tr><td>有 REST API，但没文档</td><td>打开浏览器，手动点一遍要接入的功能（录制）</td><td>OpenAPI 规格书 + Swagger 文档</td></tr>
+    <tr><td>有 Swagger / OpenAPI 文件或地址</td><td>直接导入</td><td>统一格式的文档</td></tr>
+    <tr><td>是 Jmix / Spring Boot / 若依框架</td><td>自动识别框架并生成</td><td>完整 CRUD 接口规格</td></tr>
+    <tr><td>能拿到数据库只读账号</td><td>扫描数据库结构</td><td>表结构 + 枚举 + 关系报告</td></tr>
+  </table>
+  <div class="box tip"><span class="label">核心理念</span>
+    手动录制 + 人工审核是主线，自动探索只是辅助。<strong>别指望全自动出完美结果——你点过的功能，它才抓得到。</strong>
+  </div>
+
+  <!-- 2 -->
+  <h2 id="install"><span class="num">2</span>安装（三种场景，挑一个）</h2>
+
+  <h3>场景 A：你的电脑已经装了 Python <span class="pill">最常用</span></h3>
+  <p>要求 Python <strong>3.11 或更高</strong>。在项目根目录（含 <code>pyproject.toml</code> 那一层）打开终端/命令行：</p>
+  <div class="terminal">
+<span class="comment"># 1. 建议先建独立环境（可选，但推荐）</span><br>
+<span class="prompt">$</span> <span class="cmd">python -m venv .venv</span><br>
+<span class="prompt">$</span> <span class="cmd">source .venv/bin/activate</span>   <span class="comment"># Windows 用：.venv\Scripts\activate</span><br>
+<br>
+<span class="comment"># 2. 安装本工具（依赖会自动装齐，含 Web 面板）</span><br>
+<span class="prompt">$</span> <span class="cmd">pip install -e .</span><br>
+<br>
+<span class="comment"># 3. 下载浏览器内核（必须，约 150MB，只需一次）</span><br>
+<span class="prompt">$</span> <span class="cmd">playwright install chromium</span><br>
+<span class="output"># 完成！</span>
+  </div>
+  <div class="box tip"><span class="label">要扫数据库再加装驱动</span>
+    按目标库类型选装：<br>
+    <code>pip install -e ".[postgresql]"</code> ／ <code>".[mysql]"</code> ／ <code>".[oracle]"</code> ／ <code>".[mssql]"</code> ／ <code>".[db-all]"</code>（全装）<br>
+    要用 AI 增强：<code>pip install -e ".[ai]"</code>
+  </div>
+
+  <h3>场景 B：客户/你的 Windows 电脑没装 Python（在线安装）</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><div class="t">把整个 apiscout 项目文件夹拷到目标电脑（U 盘即可）</div></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <div class="t">右键 <code>pack/setup_portable.ps1</code> → 用 PowerShell 运行</div>
+      <p>或在 cmd 里执行：<code>powershell -ExecutionPolicy Bypass -File pack\setup_portable.ps1</code></p>
+      <p>会自动下载 Python + 所有依赖 + Chromium，约 5 分钟（需联网）。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><div class="t">完成后双击生成的「启动APIScout.bat」即可</div></div>
+  </div>
+
+  <h3>场景 C：Windows 电脑没网、没 Python（离线包）</h3>
+  <p>用 <code>pack/portable/</code> 离线便携包：拷到目标电脑后双击 <code>pack/portable/install_offline.bat</code>，全程不需要联网。适合客户内网隔离环境。</p>
+  <div class="box warn"><span class="label">提示</span>离线包较大（约 229MB），需提前在有网的电脑上准备好。详见 <code>pack/README_部署.md</code>。</div>
+
+  <!-- 3 -->
+  <h2 id="start"><span class="num">3</span>启动系统</h2>
+  <p>装好之后，推荐用 <strong>Web 面板</strong>（最直观，适合不熟命令行的同事）：</p>
+  <div class="terminal">
+<span class="prompt">$</span> <span class="cmd">apiscout web</span><br>
+<span class="output">APIScout Web 面板: http://localhost:9527</span>
+  </div>
+  <p>然后浏览器打开 <code>http://localhost:9527</code>。换端口用 <code>apiscout web -p 8000</code>。</p>
+  <p>用便携/离线包安装的，直接双击 <code>pack/run.bat</code> 或「启动APIScout.bat」，会自动起服务并打开浏览器。</p>
+
+  <!-- 4 -->
+  <h2 id="flow"><span class="num">4</span>核心流程：录制式抓 API</h2>
+  <p>这是最常用、最稳的玩法——<strong>你在浏览器里操作客户系统，APIScout 在背后默默记录所有接口请求</strong>，操作完一键生成文档。</p>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><div class="t">在 Web 面板输入客户系统的网址，点「开始扫描」</div><p>会自动弹出一个浏览器窗口。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><div class="t">在弹出的浏览器里，正常登录客户系统</div><p>账号密码照常输，登录态会被一起记录。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><div class="t">把你要接入的功能，挨个手动点一遍</div><p>查列表、看详情、翻分页、做筛选……<strong>点得越全，抓到的接口越全。</strong>你没点到的功能，是抓不到的。</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><div class="t">操作完，回到 Web 面板点「停止录制 → 生成文档」</div></div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content"><div class="t">查看产物</div><p>在 <code>output/&lt;客户域名&gt;/</code> 目录下，打开 <code>api_docs.html</code> 就是一份可交互的 Swagger 文档。</p></div>
+  </div>
+  <div class="box danger"><span class="label">安全护栏</span>
+    自动探索模式不会去点「删除 / 提交 / 保存」等危险按钮，<strong>不会修改客户数据</strong>。但稳妥起见，第一次跑建议用纯手动模式（见下方命令行 <code>--manual</code>），完全由你控制点哪里。
+  </div>
+
+  <!-- 5 -->
+  <h2 id="cli"><span class="num">5</span>命令行速查</h2>
+  <p>不想用 Web 面板、或要批量处理时，用命令行更快。全部命令：</p>
+  <table>
+    <tr><th>命令</th><th>作用</th><th>常用例子</th></tr>
+    <tr><td><code>web</code></td><td>启动 Web 面板</td><td><code>apiscout web -p 9527</code></td></tr>
+    <tr><td><code>scan</code></td><td>打开浏览器扫描一个网站</td><td><code>apiscout scan https://eam.客户.com --manual</code></td></tr>
+    <tr><td><code>import</code></td><td>导入已有 Swagger/OpenAPI</td><td><code>apiscout import https://客户.com/v3/api-docs</code></td></tr>
+    <tr><td><code>analyze</code></td><td>重新分析已抓的数据</td><td><code>apiscout analyze output/客户/capture.jsonl</code></td></tr>
+    <tr><td><code>db</code></td><td>扫描数据库结构</td><td><code>apiscout db "postgresql://..."</code></td></tr>
+    <tr><td><code>enrich</code></td><td>用 AI 补全字段语义</td><td><code>apiscout enrich output/客户 --api-key sk-xxx</code></td></tr>
+  </table>
+  <h3>scan 常用参数</h3>
+  <ul>
+    <li><code>--manual</code> — 纯手动模式，不自动探索，只录你点的操作（<strong>最稳，推荐首选</strong>）</li>
+    <li><code>-o 目录</code> — 指定输出目录（默认用域名命名）</li>
+    <li><code>--append</code> — 追加模式，多次扫描累积到同一份数据</li>
+    <li><code>--title "xxx"</code> — 自定义 API 文档标题</li>
+  </ul>
+  <div class="box tip"><span class="label">多次扫描累积</span>
+    一次没点全没关系，加 <code>--append</code> 再扫一遍，新抓的接口会合并进同一份文档。
+  </div>
+
+  <!-- 6 -->
+  <h2 id="db"><span class="num">6</span>数据库扫描</h2>
+  <p>客户能给数据库<strong>只读账号</strong>时，可以直接扫库结构——拿到所有表、字段、枚举值和表间关系。</p>
+  <div class="terminal">
+<span class="comment"># 基本用法</span><br>
+<span class="prompt">$</span> <span class="cmd">apiscout db "postgresql://readonly:pass@192.168.1.100:5432/eam"</span><br>
+<br>
+<span class="comment"># 排除框架自带的无关表（工作流、定时任务等），结果更干净</span><br>
+<span class="prompt">$</span> <span class="cmd">apiscout db "postgresql://..." -x "act_*" -x "qrtz_*" -x "platform_*"</span><br>
+<br>
+<span class="comment"># 用数据库结构反过来增强已抓的 OpenAPI 文档（更精确的字段类型/枚举）</span><br>
+<span class="prompt">$</span> <span class="cmd">apiscout db "postgresql://..." --enrich output/客户/openapi.yaml</span>
+  </div>
+  <table>
+    <tr><th>参数</th><th>说明</th></tr>
+    <tr><td><code>-x, --exclude</code></td><td>排除表名，支持通配符（如 <code>act_*</code>），可重复多次</td></tr>
+    <tr><td><code>--enrich 路径</code></td><td>用库结构交叉增强已有的 OpenAPI 文档</td></tr>
+    <tr><td><code>--dialect</code></td><td>数据库类型：postgresql / mysql / oracle / mssql（一般能自动识别）</td></tr>
+    <tr><td><code>--host / --port / -u / -p / -d</code></td><td>不想拼连接串时，分开传主机/端口/用户/密码/库名</td></tr>
+  </table>
+  <p>支持 <strong>PostgreSQL、MySQL、Oracle、SQL Server</strong>。产物是一份 HTML 结构报告，可直接发客户审核确认。</p>
+  <div class="box warn"><span class="label">务必用只读账号</span>扫库只读 <code>information_schema</code>，但请始终向客户索要<strong>只读权限</strong>账号，避免任何误操作风险。</div>
+
+  <!-- 7 -->
+  <h2 id="output"><span class="num">7</span>看懂输出产物</h2>
+  <p>每次扫描的结果都在 <code>output/&lt;客户域名&gt;/</code> 下：</p>
+  <table>
+    <tr><th>文件</th><th>是什么</th><th>给谁看</th></tr>
+    <tr><td><code>api_docs.html</code></td><td>可交互的 API 文档（Swagger UI）</td><td><strong>直接发客户</strong>确认</td></tr>
+    <tr><td><code>draft_spec.yaml</code></td><td>OpenAPI 3.1 规格书</td><td>给 insight68 接入用</td></tr>
+    <tr><td><code>auth_profile.yaml</code></td><td>认证方式档案（登录怎么做的）</td><td>实施时配认证用</td></tr>
+    <tr><td><code>report.html</code></td><td>覆盖率报告（抓到多少接口）</td><td>自检 / 给客户看进度</td></tr>
+    <tr><td><code>capture.jsonl</code></td><td>原始捕获数据</td><td><strong>含客户业务数据，内部留存，勿外传</strong></td></tr>
+  </table>
+
+  <!-- 8 -->
+  <h2 id="best"><span class="num">8</span>实施最佳实践</h2>
+  <ul>
+    <li><strong>手动优先</strong>：第一次接触客户系统，用 <code>--manual</code> 或 Web 面板自己点，最稳、最可控。</li>
+    <li><strong>点得全才抓得全</strong>：把所有要接入的业务功能都走一遍——列表、详情、新增、编辑、查询、分页。</li>
+    <li><strong>结果一定要人工审核</strong>：自动推断出的字段类型、枚举、命名，发客户前自己先过一遍。纯自动 = demo 质量。</li>
+    <li><strong>看覆盖率报告</strong>：<code>report.html</code> 告诉你抓到了多少，漏的功能补扫一遍（<code>--append</code>）。</li>
+    <li><strong>有库就扫库</strong>：能拿到数据库只读账号时，<code>db --enrich</code> 能让接口文档的字段精度上一个台阶。</li>
+  </ul>
+
+  <!-- 9 -->
+  <h2 id="faq"><span class="num">9</span>常见问题排错</h2>
+
+  <div class="card">
+    <h3>Q：跑 <code>apiscout</code> 提示「命令不存在」？</h3>
+    <p>说明没装好或没在对的环境里。确认在项目根目录执行过 <code>pip install -e .</code>；如果建了虚拟环境，每次开终端要先 <code>activate</code>。</p>
+  </div>
+  <div class="card">
+    <h3>Q：启动浏览器报错 / 提示找不到 Chromium？</h3>
+    <p>少跑了一步：<code>playwright install chromium</code>（下载浏览器内核，需联网）。</p>
+  </div>
+  <div class="card">
+    <h3>Q：抓不到 API 请求，文档是空的？</h3>
+    <p>几种可能：① 你登录后没真正去点功能（只抓你点过的）；② 系统是 Vaadin/JSF 等<strong>服务端渲染</strong>框架，前端不走 REST 接口——这种没法靠录制抓，得走数据库扫描或框架适配器；③ 接口在别的子域名，多点几个页面让它跳转过去。</p>
+  </div>
+  <div class="card">
+    <h3>Q：扫数据库报「缺少驱动」？</h3>
+    <p>按库类型补装：<code>pip install -e ".[postgresql]"</code>（或 mysql/oracle/mssql）。</p>
+  </div>
+  <div class="card">
+    <h3>Q：会不会改坏客户的数据？</h3>
+    <p>不会。录制只是旁观记录；自动探索有护栏，不点删除/提交/保存类按钮；数据库扫描只读结构。但请坚持用<strong>只读数据库账号</strong>，并优先用手动模式。</p>
+  </div>
+  <div class="card">
+    <h3>Q：跑测试确认环境没问题？</h3>
+    <p><code>pip install -e ".[dev]"</code> 后执行 <code>pytest tests/ -q</code>，应看到 197 passed（纯本地 mock，不连任何真实系统）。</p>
+  </div>
+
+  <!-- 10 -->
+  <h2 id="security"><span class="num">10</span>安全红线（必读）</h2>
+  <div class="box danger"><span class="label">客户数据不外传</span>
+    <code>capture.jsonl</code>、<code>output/</code>、<code>test_output/</code> 里都是客户真实业务数据。<strong>内部留存即可，不要提交到代码仓库、不要发到群里、不要传给无关方。</strong>这些目录已默认在版本控制里忽略。
+  </div>
+  <ul>
+    <li>不要在代码或文档里硬编码客户密码、密钥；AI 的 API Key 通过参数或环境变量传，用完不要写进文件。</li>
+    <li>数据库一律用<strong>只读账号</strong>。</li>
+    <li>给客户的产物只发 <code>api_docs.html</code> / <code>report.html</code> 这类整理过的文档，原始捕获数据不外发。</li>
+  </ul>
+
+  <footer>
+    APIScout · insight68 客户实施工具 · 本手册随源码分发<br>
+    遇到工具本身的问题，找 dingjq；接入方案对接 insight68 平台。
+  </footer>
+
+</div>
+</body>
+</html>

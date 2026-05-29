@@ -10,6 +10,8 @@ build/
 capture.jsonl
 *.jsonl
 output/
+# 实战扫描产物，含客户业务数据，不入库
+test_output/
 screenshots/
 
 # IDE
